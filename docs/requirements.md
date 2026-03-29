@@ -85,7 +85,19 @@ As a user, I want to export and import my data as JSON so that I can backup my p
 - WHEN the user selects "Import Workout History"
 - THEN the system SHALL merge the imported logs with the current history, avoiding duplicates by ID.
 
-### R6: Historical Tracking and Review
+### R9: Individual Workout Export/Import
+**User Story**
+As a user, I want to export and import a single workout log so that I can share or move individual sessions without transferring my entire history.
+
+**Acceptance Criteria**
+- WHEN the user views the details of a specific workout log (active or historical)
+- THEN the system SHALL provide an "Export Workout" button.
+- WHEN the user selects "Export Workout"
+- THEN the system SHALL generate a JSON file containing only that specific `WorkoutLog` with correct metadata.
+- WHEN the user imports a single `WorkoutLog` file
+- THEN the system SHALL merge it into the history, avoiding duplicates by ID.
+
+### R10: Historical Tracking and Review
 **User Story**
 As a user, I want to see my progress for a specific exercise over time.
 
@@ -124,6 +136,17 @@ As a user, I want to view full details of my past workouts, edit them, and delet
 - THEN the system SHALL allow deleting an entire workout log.
 - WHEN a workout log is deleted
 - THEN the system SHALL remove it permanently from the history.
+
+### R11: Documentation and User Guidance
+**User Story**
+As a user, I want to have clear documentation and JSON examples so that I can understand how the app works and how to manage my data.
+
+**Acceptance Criteria**
+- WHEN the user opens the repository or documentation
+- THEN the system SHALL provide a README file with an overview of the app.
+- THEN the system SHALL include detailed JSON examples for all import types (Full, History, Program).
+- THEN the system SHALL explain the "Template vs. Log" architecture.
+- THEN the system SHALL provide instructions for local setup and deployment.
 
 ## 3. Non-Functional Requirements
 

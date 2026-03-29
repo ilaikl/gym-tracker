@@ -65,3 +65,14 @@
 - **API changes:** New export/import methods for specific stores.
 - **Risks:** Overwriting data incorrectly or creating duplicates during merge.
 - **Dependencies:** PLAN-001.
+
+## PLAN-007: Documentation and Infrastructure Support
+**Related Requirements:** R11
+**Priority:** Medium
+**Description:** Provide comprehensive user documentation and JSON examples. Fix infrastructure issues (like webpack publicPath) to support both local development and remote hosting.
+**Technical Scope:**
+- **Affected modules:** `README.md`, `webpack.common.js`
+- **Data model impact:** N/A (Documentation).
+- **API changes:** Conditional build configuration.
+- **Risks:** Inaccurate examples leading to user confusion.
+- **Dependencies:** None.
