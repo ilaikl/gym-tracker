@@ -25,6 +25,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- UI Elements ---
     // Backup/Restore
     const exportBtn = document.getElementById('export-btn');
+    const exportProgramBtn = document.getElementById('export-program-btn');
+    const exportHistoryBtn = document.getElementById('export-history-btn');
     const importBtn = document.getElementById('import-btn');
     const importInput = document.getElementById('import-input');
 
@@ -96,7 +98,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     exportBtn.addEventListener('click', async () => {
         try {
             await jsonTransferService.exportData();
-            alert('Data exported successfully.');
+            alert('Full data exported successfully.');
+        } catch (error) {
+            alert('Export failed: ' + error.message);
+        }
+    });
+
+    exportProgramBtn.addEventListener('click', async () => {
+        try {
+            await jsonTransferService.exportProgram();
+            alert('Program exported successfully.');
+        } catch (error) {
+            alert('Export failed: ' + error.message);
+        }
+    });
+
+    exportHistoryBtn.addEventListener('click', async () => {
+        try {
+            await jsonTransferService.exportHistory();
+            alert('History exported successfully.');
         } catch (error) {
             alert('Export failed: ' + error.message);
         }
@@ -110,15 +130,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         const file = event.target.files[0];
         if (!file) return;
 
-        if (confirm('Importing data will replace all current data. Are you sure?')) {
+        // Peak inside the file for metadata before asking for confirmation
+        const reader = new FileReader();
+        reader.onload = async (e) => {
             try {
-                await jsonTransferService.importData(file);
-                alert('Data imported successfully. The page will now reload.');
-                window.location.reload();
+                const data = JSON.parse(e.target.result);
+                const type = data.metadata?.type || 'full';
+                let msg = 'Importing this file will merge its contents. Are you sure?';
+                if (type === 'full') msg = 'Importing full data will REPLACE ALL your current data. Are you sure?';
+                if (type === 'program') msg = 'Importing a program will REPLACE your current program template. Are you sure?';
+
+                if (confirm(msg)) {
+                    await jsonTransferService.importData(file);
+                    alert('Data imported successfully. The page will now reload.');
+                    window.location.reload();
+                }
             } catch (error) {
                 alert('Import failed: ' + error.message);
             }
-        }
+        };
+        reader.readAsText(file);
         importInput.value = '';
     });
 

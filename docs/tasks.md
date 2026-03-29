@@ -51,3 +51,15 @@
 (PLAN-005 | R3 | LLD-005)
 - [x] Final UI/UX review and bug fixes
 (PLAN-005 | R3 | LLD-005)
+
+## Phase 6 — Partial Data Management
+- [x] Add specific Export Program/History buttons to UI
+(PLAN-006 | R5 | LLD-006)
+- [x] Implement `exportProgram` and `exportHistory` in `JSONTransferService`
+(PLAN-006 | R5 | LLD-006)
+- [x] Implement `mergeLogs` in `PersistenceService`
+(PLAN-006 | R5 | LLD-006)
+- [x] Update `importData` to support partial merges for history and programs
+(PLAN-006 | R5 | LLD-006)
+- [x] Verify partial import/export functionality
+(PLAN-006 | R5 | LLD-006)

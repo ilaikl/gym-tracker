@@ -29,9 +29,15 @@
 
     <div id="backup-restore">
       <h2>Backup / Restore</h2>
-      <button id="export-btn">Export Data (JSON)</button>
+      <div style="margin-bottom: 10px;">
+        <button id="export-btn">Full Export (JSON)</button>
+        <button id="import-btn">Full Import (JSON)</button>
+      </div>
+      <div>
+        <button id="export-program-btn">Export Program Only</button>
+        <button id="export-history-btn">Export History Only</button>
+      </div>
       <input type="file" id="import-input" style="display: none;" accept=".json">
-      <button id="import-btn">Import Data (JSON)</button>
     </div>
 
     <div id="program-management" style="margin-top: 20px;">

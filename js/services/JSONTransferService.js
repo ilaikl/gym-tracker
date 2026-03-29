@@ -36,6 +36,54 @@ class JSONTransferService {
     }
 
     /**
+     * Exports the workout program only.
+     */
+    async exportProgram() {
+        try {
+            const program = await persistenceService.getAll('program');
+            const fullState = {
+                metadata: {
+                    appName: 'Workout Tracker',
+                    type: 'program',
+                    schemaVersion: 1,
+                    exportedAt: new Date().toISOString()
+                },
+                program: program[0] || null
+            };
+            const jsonString = JSON.stringify(fullState, null, 2);
+            this.downloadJSON(jsonString, `workout-program-${new Date().toISOString().split('T')[0]}.json`);
+            console.info('JSONTransferService: Program exported successfully.');
+        } catch (error) {
+            console.error('JSONTransferService: Program export failed', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Exports workout history only.
+     */
+    async exportHistory() {
+        try {
+            const workoutLogs = await persistenceService.getAll('workoutLogs');
+            const fullState = {
+                metadata: {
+                    appName: 'Workout Tracker',
+                    type: 'history',
+                    schemaVersion: 1,
+                    exportedAt: new Date().toISOString()
+                },
+                workoutLogs: workoutLogs
+            };
+            const jsonString = JSON.stringify(fullState, null, 2);
+            this.downloadJSON(jsonString, `workout-history-${new Date().toISOString().split('T')[0]}.json`);
+            console.info('JSONTransferService: History exported successfully.');
+        } catch (error) {
+            console.error('JSONTransferService: History export failed', error);
+            throw error;
+        }
+    }
+
+    /**
      * Triggers a browser download of the JSON string.
      */
     downloadJSON(content, fileName) {
@@ -64,8 +112,24 @@ class JSONTransferService {
                         throw new Error('Invalid backup file: Missing or incorrect metadata.');
                     }
 
-                    await persistenceService.replaceAll(fullState);
-                    console.info('JSONTransferService: Data imported successfully.');
+                    const type = fullState.metadata.type || 'full';
+
+                    if (type === 'program') {
+                        if (fullState.program) {
+                            await persistenceService.save('program', fullState.program);
+                            console.info('JSONTransferService: Program imported successfully.');
+                        }
+                    } else if (type === 'history') {
+                        if (fullState.workoutLogs) {
+                            await persistenceService.mergeLogs(fullState.workoutLogs);
+                            console.info('JSONTransferService: History merged successfully.');
+                        }
+                    } else {
+                        // Full import (replace all)
+                        await persistenceService.replaceAll(fullState);
+                        console.info('JSONTransferService: Full data replaced successfully.');
+                    }
+
                     resolve(fullState);
                 } catch (error) {
                     console.error('JSONTransferService: Import failed', error);

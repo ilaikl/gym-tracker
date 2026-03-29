@@ -134,13 +134,35 @@ class PersistenceService {
         }
 
         if (fullState.settings) {
-            // Settings is a single document, we can store it with a fixed key 'app_settings'
-            // OR if LLD implies it's just the object itself, we need to decide.
-            // LLD says "settings: (single document)".
             await this.save('settings', fullState.settings, 'current');
         }
 
         console.info('PersistenceService: All data replaced from imported state.');
+    }
+
+    /**
+     * Merges imported logs into the workoutLogs store.
+     */
+    async mergeLogs(logs) {
+        await this.init();
+        let addedCount = 0;
+        let updatedCount = 0;
+
+        for (const log of logs) {
+            const existing = await this.getById('workoutLogs', log.id);
+            if (!existing) {
+                await this.save('workoutLogs', log);
+                addedCount++;
+            } else {
+                // Update if the imported log is newer
+                if (new Date(log.updatedAt) > new Date(existing.updatedAt)) {
+                    await this.save('workoutLogs', log);
+                    updatedCount++;
+                }
+            }
+        }
+        console.info(`PersistenceService: Merged logs. Added: ${addedCount}, Updated: ${updatedCount}`);
+        return { addedCount, updatedCount };
     }
 }
 

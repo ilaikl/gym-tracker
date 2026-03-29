@@ -54,3 +54,14 @@
 - **Data model impact:** Seeded records in IndexedDB.
 - **Risks:** Seed data conflicts with existing user data.
 - **Dependencies:** PLAN-002.
+
+## PLAN-006: Partial Data Management
+**Related Requirements:** R5
+**Priority:** Medium
+**Description:** Implement partial import and export for workout history and program templates to allow modular data updates.
+**Technical Scope:**
+- **Affected modules:** `JSONTransferService`, `PersistenceService`, `UI`
+- **Data model impact:** Metadata tagging for partial files. Merge logic for workout logs.
+- **API changes:** New export/import methods for specific stores.
+- **Risks:** Overwriting data incorrectly or creating duplicates during merge.
+- **Dependencies:** PLAN-001.

@@ -72,10 +72,18 @@ As a user, I want my past workouts to remain unchanged even if I update my progr
 As a user, I want to export and import my data as JSON so that I can backup my progress or move to another device.
 
 **Acceptance Criteria**
-- WHEN the user selects "Export"
+- WHEN the user selects "Full Export"
 - THEN the system SHALL generate a single JSON file containing the program, all workout logs, and settings.
-- WHEN the user selects "Import" and provides a valid JSON file
+- WHEN the user selects "Full Import" and provides a valid JSON file
 - THEN the system SHALL replace the local data with the content of the file.
+- WHEN the user selects "Export Program Only"
+- THEN the system SHALL generate a JSON file containing only the program template.
+- WHEN the user selects "Import Program"
+- THEN the system SHALL replace only the current program with the imported one.
+- WHEN the user selects "Export Workout History"
+- THEN the system SHALL generate a JSON file containing all workout logs.
+- WHEN the user selects "Import Workout History"
+- THEN the system SHALL merge the imported logs with the current history, avoiding duplicates by ID.
 
 ### R6: Historical Tracking and Review
 **User Story**
