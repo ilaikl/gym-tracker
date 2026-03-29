@@ -78,6 +78,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- Event Listeners ---
 
+    // Null check wrapper for currentActiveLog
+    function withActiveLog(callback) {
+        return async (...args) => {
+            if (!currentActiveLog) {
+                console.warn('App: currentActiveLog is null. Action ignored.');
+                return;
+            }
+            return await callback(...args);
+        };
+    }
+
     // Backup/Restore Logic
     exportBtn.addEventListener('click', async () => {
         try {
@@ -323,6 +334,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const val = parseFloat(e.target.value);
                 const field = e.target.classList.contains('actual-reps') ? 'actualReps' : 'actualWeight';
 
+                if (!currentActiveLog) return;
                 await workoutEngine.updateSet(currentActiveLog.id, exId, setIdx, { [field]: val });
                 // Update local object to reflect the change
                 const ex = currentActiveLog.exercises.find(e => e.id === exId);
@@ -332,30 +344,30 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Attach add/remove set listeners
         document.querySelectorAll('.add-set-btn').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
+            btn.addEventListener('click', withActiveLog(async (e) => {
                 const exId = e.target.dataset.exId;
                 currentActiveLog = await workoutEngine.addSet(currentActiveLog.id, exId);
                 renderActiveExercises(currentActiveLog);
-            });
+            }));
         });
 
         document.querySelectorAll('.remove-set-btn').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
+            btn.addEventListener('click', withActiveLog(async (e) => {
                 const exId = e.target.dataset.exId;
                 currentActiveLog = await workoutEngine.removeLastSet(currentActiveLog.id, exId);
                 renderActiveExercises(currentActiveLog);
-            });
+            }));
         });
 
         // Attach remove exercise listener
         document.querySelectorAll('.remove-exercise-btn').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
+            btn.addEventListener('click', withActiveLog(async (e) => {
                 const exId = e.target.dataset.exId;
                 if (confirm('Remove this exercise from current workout?')) {
                     currentActiveLog = await workoutEngine.removeExercise(currentActiveLog.id, exId);
                     renderActiveExercises(currentActiveLog);
                 }
-            });
+            }));
         });
     }
 
@@ -404,14 +416,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    addExistingExConfirm.addEventListener('click', async () => {
+    addExistingExConfirm.addEventListener('click', withActiveLog(async () => {
         const exTemplate = JSON.parse(existingExSelect.value);
         currentActiveLog = await workoutEngine.addExtraExercise(currentActiveLog.id, exTemplate);
         addExModal.style.display = 'none';
         renderActiveExercises(currentActiveLog);
-    });
+    }));
 
-    addManualExConfirm.addEventListener('click', async () => {
+    addManualExConfirm.addEventListener('click', withActiveLog(async () => {
         const name = document.getElementById('manual-ex-name').value;
         const bodyPart = document.getElementById('manual-ex-bodypart').value;
         const setsCount = parseInt(document.getElementById('manual-ex-sets').value);
@@ -439,9 +451,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         currentActiveLog = await workoutEngine.addExtraExercise(currentActiveLog.id, manualExTemplate);
         addExModal.style.display = 'none';
         renderActiveExercises(currentActiveLog);
-    });
+    }));
 
-    completeWorkoutBtn.addEventListener('click', async () => {
+    completeWorkoutBtn.addEventListener('click', withActiveLog(async () => {
         if (confirm('Complete workout?')) {
             await workoutEngine.completeWorkout(currentActiveLog.id);
             if (!isEditingHistory) {
@@ -457,7 +469,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             currentActiveLog = null;
             isEditingHistory = false;
         }
-    });
+    }));
 
     cancelActiveWorkoutBtn.addEventListener('click', () => {
         activeWorkoutScreen.style.display = 'none';

@@ -13,9 +13,11 @@ class PersistenceService {
         if (this.db) return this.db;
 
         return new Promise((resolve, reject) => {
+            console.info('PersistenceService: Opening IndexedDB...', this.dbName, this.version);
             const request = indexedDB.open(this.dbName, this.version);
 
             request.onupgradeneeded = (event) => {
+                console.info('PersistenceService: Upgrade needed.');
                 const db = event.target.result;
 
                 if (!db.objectStoreNames.contains('program')) {
@@ -42,6 +44,10 @@ class PersistenceService {
             request.onerror = (event) => {
                 console.error('PersistenceService: Error initializing IndexedDB', event.target.error);
                 reject(event.target.error);
+            };
+
+            request.onblocked = () => {
+                console.warn('PersistenceService: IndexedDB open blocked. Please close other tabs.');
             };
         });
     }
