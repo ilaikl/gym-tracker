@@ -92,6 +92,7 @@ body {
     padding: 0;
     display: flex;
     justify-content: center;
+    text-align: left;
 }
 
 #app {
@@ -169,7 +170,7 @@ input[type="text"], input[type="number"] {
 
 .set-row input {
     width: 60px;
-    text-align: center;
+    text-align: left;
 }
 
 #active-workout-screen {
@@ -190,9 +191,12 @@ input[type="text"], input[type="number"] {
     margin-bottom: 20px;
 }
 
-/* RTL Support for Hebrew names if needed */
-[lang="he"] body {
-    direction: rtl;
+/* Alignment and Direction */
+body {
+  text-align: left;
+}
+input[type="number"], input[type="text"] {
+  text-align: left;
 }
 
 /* ==========================================================================

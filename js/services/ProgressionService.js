@@ -21,19 +21,30 @@ class ProgressionService {
         const history = [];
 
         for (const log of logs) {
-            const exercise = log.exercises.find(ex => ex.templateExerciseId === templateExerciseId);
-            if (exercise) {
-                history.push({
-                    date: log.date,
-                    logId: log.id,
-                    name: exercise.name,
-                    actualSets: exercise.actualSets,
-                    status: log.status
-                });
+            const exercises = log.exercises.filter(ex => ex.templateExerciseId === templateExerciseId);
+            for (const exercise of exercises) {
+                if (exercise.actualSets && exercise.actualSets.length > 0) {
+                    history.push({
+                        date: log.date,
+                        logId: log.id,
+                        name: exercise.name,
+                        actualSets: exercise.actualSets,
+                        status: log.status
+                    });
+                }
             }
         }
 
         return history;
+    }
+
+    /**
+     * Retrieves the most recent N performances for an exercise.
+     * (PLAN-008 | R12 | LLD-008)
+     */
+    async getRecentHistory(templateExerciseId, limit = 5) {
+        const history = await this.getExerciseHistory(templateExerciseId);
+        return history.slice(0, limit);
     }
 
     /**

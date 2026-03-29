@@ -23,6 +23,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // --- UI Elements ---
+    const appContainer = document.getElementById('app');
+    const resumeContainer = document.createElement('div');
+    resumeContainer.id = 'resume-workout-container';
+    resumeContainer.style.display = 'none';
+    resumeContainer.style.padding = '10px';
+    resumeContainer.style.backgroundColor = '#fff3cd';
+    resumeContainer.style.border = '1px solid #ffeeba';
+    resumeContainer.style.marginBottom = '15px';
+    document.querySelector('#workout-engine').prepend(resumeContainer);
+
     // Backup/Restore
     const exportBtn = document.getElementById('export-btn');
     const exportProgramBtn = document.getElementById('export-program-btn');
@@ -40,6 +50,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const exerciseEditor = document.getElementById('exercise-editor');
     const exNameInput = document.getElementById('ex-name');
     const exBodyPartInput = document.getElementById('ex-bodypart');
+    const exTargetWeightInput = document.getElementById('ex-target-weight');
+    const exTargetUnitInput = document.getElementById('ex-target-unit');
+    const exTargetSetsInput = document.getElementById('ex-target-sets');
+    const exNotesInput = document.getElementById('ex-notes');
     const saveExBtn = document.getElementById('save-ex-btn');
     const cancelExBtn = document.getElementById('cancel-ex-btn');
 
@@ -66,6 +80,50 @@ document.addEventListener('DOMContentLoaded', async () => {
     const addExistingExConfirm = document.getElementById('add-existing-ex-confirm');
     const addManualExConfirm = document.getElementById('add-manual-ex-confirm');
 
+    // Progression UI Elements (Inline)
+    function createInlineHistoryUI(container, exerciseId) {
+        const historyBtn = document.createElement('button');
+        historyBtn.innerText = 'Progress';
+        historyBtn.className = 'view-progression-btn';
+        historyBtn.dataset.exTemplateId = exerciseId;
+        historyBtn.style.padding = '2px 8px';
+        historyBtn.style.fontSize = '0.9em';
+        historyBtn.style.cursor = 'pointer';
+
+        const historyContainer = document.createElement('div');
+        historyContainer.className = 'inline-history-container';
+        historyContainer.style.display = 'none';
+        historyContainer.style.marginTop = '5px';
+        historyContainer.style.fontSize = '0.8em';
+        historyContainer.style.backgroundColor = '#f9f9f9';
+        historyContainer.style.padding = '5px';
+        historyContainer.style.border = '1px solid #ddd';
+
+        historyBtn.onclick = async (e) => {
+            e.stopPropagation();
+            if (historyContainer.style.display === 'none') {
+                const history = await progressionService.getRecentHistory(exerciseId, 3);
+                if (history.length === 0) {
+                    historyContainer.innerHTML = 'No history yet.';
+                } else {
+                    historyContainer.innerHTML = history.map(h => `
+                        <div style="border-bottom: 1px solid #eee; padding: 2px 0;">
+                            <strong>${h.date}</strong>: ${h.actualSets.map(s => `${s.actualWeight}${s.unit}x${s.actualReps}`).join(', ')}
+                        </div>
+                    `).join('');
+                }
+                historyContainer.style.display = 'block';
+                historyBtn.innerText = 'Close Progress';
+            } else {
+                historyContainer.style.display = 'none';
+                historyBtn.innerText = 'Progress';
+            }
+        };
+
+        container.appendChild(historyBtn);
+        container.appendChild(historyContainer);
+    }
+
     // History & Progression UI
     const viewHistoryBtn = document.getElementById('view-history-btn');
     const historyScreen = document.getElementById('history-screen');
@@ -76,18 +134,60 @@ document.addEventListener('DOMContentLoaded', async () => {
     const backToHistoryBtn = document.getElementById('back-to-history-btn');
     const cancelActiveWorkoutBtn = document.getElementById('cancel-active-workout-btn');
 
+    let currentActiveLog = null;
+    let historyViewLog = null;
+    let isEditingHistory = false;
     let currentEditingDayId = null;
     let currentEditingExId = null;
-    let currentActiveLog = null;
-    let isEditingHistory = false;
+
+    // Info Button logic
+    const infoBtn = document.getElementById('info-btn');
+    if (infoBtn) {
+        infoBtn.onclick = () => {
+            alert('Data Management Info:\n\n- Full Export: Saves everything (Program, History, Settings).\n- Import Data: You can select any Workout Tracker JSON file. If it\'s a Full Backup, it replaces everything. If it\'s a Program or History file, it merges/replaces only that part.');
+        };
+    }
 
     // --- Event Listeners ---
 
-    // Null check wrapper for currentActiveLog
+    // --- Resume Draft Logic ---
+    async function checkForDraft() {
+        const logs = await workoutEngine.getAllLogs();
+        const draft = logs.find(log => log.status === 'draft');
+        if (draft) {
+            resumeContainer.innerHTML = `
+                <span>You have an unfinished workout from ${draft.date}.</span>
+                <button id="resume-btn" style="margin-right: 10px;">Resume</button>
+                <button id="discard-btn" style="color: red;">Discard</button>
+            `;
+            resumeContainer.style.display = 'block';
+
+            document.getElementById('resume-btn').onclick = () => {
+                currentActiveLog = draft;
+                showActiveWorkout(draft);
+                resumeContainer.style.display = 'none';
+                startWorkoutBtn.style.display = 'none';
+            };
+
+            document.getElementById('discard-btn').onclick = async () => {
+                if (confirm('Are you sure you want to discard this draft?')) {
+                    await workoutEngine.deleteWorkoutLog(draft.id);
+                    resumeContainer.style.display = 'none';
+                }
+            };
+        } else {
+            resumeContainer.style.display = 'none';
+        }
+    }
+
+    await checkForDraft();
+
+    // Null check wrapper for active workout actions
     function withActiveLog(callback) {
         return async (...args) => {
-            if (!currentActiveLog) {
-                console.warn('App: currentActiveLog is null. Action ignored.');
+            const log = isEditingHistory ? historyViewLog : currentActiveLog;
+            if (!log) {
+                console.warn('App: no log (active or history) for this action.');
                 return;
             }
             return await callback(...args);
@@ -188,19 +288,43 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             dayEl.innerHTML = `
                 <h4>${day.name} (${day.type})</h4>
-                <div class="exercises-list">
-                    ${day.exercises.map(ex => `
-                        <div class="exercise-item">
-                            ${ex.name} - ${ex.bodyPartPrimary}
-                            <button class="edit-ex-btn" data-day-id="${day.id}" data-ex-id="${ex.id}">Edit</button>
-                            <button class="view-progression-btn" data-ex-template-id="${ex.id}" data-ex-name="${ex.name}">Progress</button>
-                            <button class="delete-ex-btn" data-day-id="${day.id}" data-ex-id="${ex.id}">Delete</button>
-                        </div>
-                    `).join('')}
+                <div class="exercises-list"></div>
+                <div class="add-ex-section">
+                    <button class="add-ex-btn" data-day-id="${day.id}">Add Exercise</button>
+                    <div class="inline-add-editor-container" data-day-id="${day.id}" style="margin-top: 10px;"></div>
                 </div>
-                <button class="add-ex-btn" data-day-id="${day.id}">Add Exercise</button>
             `;
+
+            day.exercises.forEach(ex => {
+            const dayElEx = document.createElement('div');
+            dayElEx.className = 'exercise-item';
+            dayElEx.style.borderBottom = '1px solid #eee';
+            dayElEx.style.padding = '5px 0';
+
+            const repsString = ex.targetSets.map(s => s.targetReps || s.maxReps || 0).join(', ');
+
+            dayElEx.innerHTML = `
+                <div style="font-weight: bold;">${ex.name}</div>
+                <div style="font-size: 0.85em; color: #666;">
+                    ${ex.bodyPartPrimary} | ${ex.defaultWeight.value}${ex.defaultWeight.unit} | Target Reps: ${repsString}
+                </div>
+                ${ex.notes ? `<div style="font-size: 0.8em; color: #888; font-style: italic; margin-top: 2px;">Cues: ${ex.notes}</div>` : ''}
+                <div class="ex-actions" style="margin-top: 5px;">
+                    <button class="edit-ex-btn" data-day-id="${day.id}" data-ex-id="${ex.id}">Edit</button>
+                    <span class="history-anchor" data-ex-id="${ex.id}"></span>
+                    <button class="delete-ex-btn" data-day-id="${day.id}" data-ex-id="${ex.id}">Delete</button>
+                </div>
+                <div class="inline-editor-container" data-ex-id="${ex.id}" style="margin-top: 10px;"></div>
+            `;
+            dayEl.querySelector('.exercises-list').appendChild(dayElEx);
+        });
             programDaysList.appendChild(dayEl);
+
+            // Inject inline history buttons
+            day.exercises.forEach(ex => {
+                const anchor = dayEl.querySelector(`.history-anchor[data-ex-id="${ex.id}"]`);
+                if (anchor) createInlineHistoryUI(anchor, ex.id);
+            });
         });
 
         // Attach listeners to dynamic buttons
@@ -208,6 +332,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             btn.addEventListener('click', (e) => {
                 currentEditingDayId = e.target.dataset.dayId;
                 currentEditingExId = null;
+                const container = e.target.closest('.add-ex-section').querySelector('.inline-add-editor-container');
+                container.appendChild(exerciseEditor);
                 showExerciseEditor();
             });
         });
@@ -216,15 +342,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             btn.addEventListener('click', async (e) => {
                 currentEditingDayId = e.target.dataset.dayId;
                 currentEditingExId = e.target.dataset.exId;
+                const container = e.target.closest('.exercise-item').querySelector('.inline-editor-container');
+                container.appendChild(exerciseEditor);
                 await showExerciseEditor(currentEditingDayId, currentEditingExId);
             });
         });
 
-        document.querySelectorAll('.view-progression-btn').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                await showProgression(e.target.dataset.exTemplateId, e.target.dataset.exName);
-            });
-        });
+        // Removed .view-progression-btn listener as it's now handled by createInlineHistoryUI
 
         document.querySelectorAll('.delete-ex-btn').forEach(btn => {
             btn.addEventListener('click', async (e) => {
@@ -244,10 +368,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             const ex = day.exercises.find(e => e.id === exId);
             exNameInput.value = ex.name;
             exBodyPartInput.value = ex.bodyPartPrimary;
+            exTargetWeightInput.value = ex.defaultWeight.value;
+            exTargetUnitInput.value = ex.defaultWeight.unit;
+            exTargetSetsInput.value = ex.targetSets.map(s => s.targetReps || s.maxReps || 0).join(', ');
+            exNotesInput.value = ex.notes || '';
             document.getElementById('ex-editor-title').innerText = 'Edit Exercise';
         } else {
             exNameInput.value = '';
             exBodyPartInput.value = '';
+            exTargetWeightInput.value = 0;
+            exTargetUnitInput.value = 'kg';
+            exTargetSetsInput.value = '10, 10, 10';
+            exNotesInput.value = '';
             document.getElementById('ex-editor-title').innerText = 'Add Exercise';
         }
     }
@@ -255,35 +387,46 @@ document.addEventListener('DOMContentLoaded', async () => {
     saveExBtn.addEventListener('click', async () => {
         const name = exNameInput.value.trim();
         const bodyPart = exBodyPartInput.value.trim();
+        const weight = parseFloat(exTargetWeightInput.value) || 0;
+        const unit = exTargetUnitInput.value;
+        const setsString = exTargetSetsInput.value.trim();
+        const notes = exNotesInput.value.trim();
+
         if (!name) return alert('Name is required');
 
+        const repsArray = setsString.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n));
+        const targetSets = repsArray.map((reps, i) => ({
+            setNumber: i + 1,
+            targetReps: reps
+        }));
+
+        const exerciseData = {
+            name,
+            bodyPartPrimary: bodyPart,
+            defaultWeight: { value: weight, unit, label: '' },
+            targetSets,
+            repGoalType: 'fixed',
+            notes
+        };
+
         if (currentEditingExId) {
-            await templateService.updateExercise(currentEditingDayId, currentEditingExId, {
-                name,
-                bodyPartPrimary: bodyPart
-            });
+            const sync = confirm('Apply changes to all days where this exercise appears?');
+            await templateService.updateExercise(currentEditingDayId, currentEditingExId, exerciseData, sync);
         } else {
-            // Add exercise with default 3 sets of 8-12 reps
             await templateService.addExercise(currentEditingDayId, {
-                name,
-                bodyPartPrimary: bodyPart,
-                targetSets: [
-                    { setNumber: 1, minReps: 8, maxReps: 12 },
-                    { setNumber: 2, minReps: 8, maxReps: 12 },
-                    { setNumber: 3, minReps: 8, maxReps: 12 }
-                ],
-                repGoalType: 'range',
-                defaultWeight: { value: 0, unit: 'kg', label: '' },
-                notes: []
+                ...exerciseData,
+                bodyPartSecondary: []
             });
         }
 
         exerciseEditor.style.display = 'none';
+        document.getElementById('program-editor').appendChild(exerciseEditor);
         await renderProgram();
     });
 
     cancelExBtn.addEventListener('click', () => {
         exerciseEditor.style.display = 'none';
+        document.getElementById('program-editor').appendChild(exerciseEditor);
     });
 
     // --- Workout Engine UI Logic ---
@@ -315,6 +458,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             btn.addEventListener('click', async () => {
                 const log = await workoutEngine.createLogFromTemplate(day);
                 currentActiveLog = log;
+                historyViewLog = null;
+                isEditingHistory = false;
                 showActiveWorkout(log);
             });
             daysToSelectList.appendChild(btn);
@@ -340,15 +485,28 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             exEl.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                    <h4>${ex.name} (${ex.bodyPartPrimary})</h4>
-                    <button class="remove-exercise-btn" data-ex-id="${ex.id}" style="color: red; padding: 2px 5px;">Delete</button>
+                    <div style="flex: 1;">
+                        <h4 style="margin: 0;">${ex.name} (${ex.bodyPartPrimary})</h4>
+                        ${ex.targetSnapshot.notes ? `<div style="font-size: 0.85em; color: #777; font-style: italic; margin-top: 2px;">Cues: ${ex.targetSnapshot.notes}</div>` : ''}
+                        <div class="active-history-container" style="margin-top: 5px;">
+                            <span class="active-history-anchor" data-ex-id="${ex.templateExerciseId}"></span>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 5px; align-items: center; margin-left: 10px;">
+                        <button class="promote-target-btn" data-ex-id="${ex.id}" title="Set as future target">Set Target</button>
+                        <button class="remove-exercise-btn" data-ex-id="${ex.id}" style="color: red; padding: 2px 5px;">Delete</button>
+                    </div>
                 </div>
                 <div class="logged-sets-list">
                     ${ex.actualSets.map((set, idx) => `
-                        <div class="set-row">
-                            Set ${set.setNumber} | Target: ${set.targetReps} |
-                            W: <input type="number" class="actual-weight" data-ex-id="${ex.id}" data-set-idx="${idx}" value="${set.actualWeight}" style="width: 45px;">
-                            R: <input type="number" class="actual-reps" data-ex-id="${ex.id}" data-set-idx="${idx}" value="${set.actualReps || ''}" style="width: 40px;">
+                        <div class="set-row" style="margin-bottom: 5px; font-size: 0.95em;">
+                            <div style="color: #666; margin-bottom: 2px;">
+                                Set ${set.setNumber} | Target: ${set.targetWeight}${set.unit} x ${set.targetReps}
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span>Weight: <input type="number" class="actual-weight" data-ex-id="${ex.id}" data-set-idx="${idx}" value="${set.actualWeight}" style="width: 50px; padding: 3px;"></span>
+                                <span>Reps: <input type="number" class="actual-reps" data-ex-id="${ex.id}" data-set-idx="${idx}" value="${set.actualReps || ''}" style="width: 45px; padding: 3px;"></span>
+                            </div>
                         </div>
                     `).join('')}
                 </div>
@@ -358,6 +516,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </div>
             `;
             activeExercisesList.appendChild(exEl);
+
+            // Inject inline history for active workout
+            if (ex.templateExerciseId) {
+                const anchor = exEl.querySelector(`.active-history-anchor[data-ex-id="${ex.templateExerciseId}"]`);
+                if (anchor) createInlineHistoryUI(anchor, ex.templateExerciseId);
+            }
         });
 
         // Attach auto-save listeners
@@ -368,10 +532,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const val = parseFloat(e.target.value);
                 const field = e.target.classList.contains('actual-reps') ? 'actualReps' : 'actualWeight';
 
-                if (!currentActiveLog) return;
-                await workoutEngine.updateSet(currentActiveLog.id, exId, setIdx, { [field]: val });
+                const log = isEditingHistory ? historyViewLog : currentActiveLog;
+                if (!log) return;
+                await workoutEngine.updateSet(log.id, exId, setIdx, { [field]: val });
                 // Update local object to reflect the change
-                const ex = currentActiveLog.exercises.find(e => e.id === exId);
+                const ex = log.exercises.find(e => e.id === exId);
                 ex.actualSets[setIdx][field] = val;
             });
         });
@@ -380,16 +545,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.querySelectorAll('.add-set-btn').forEach(btn => {
             btn.addEventListener('click', withActiveLog(async (e) => {
                 const exId = e.target.dataset.exId;
-                currentActiveLog = await workoutEngine.addSet(currentActiveLog.id, exId);
-                renderActiveExercises(currentActiveLog);
+                const log = isEditingHistory ? historyViewLog : currentActiveLog;
+                const updatedLog = await workoutEngine.addSet(log.id, exId);
+                if (isEditingHistory) historyViewLog = updatedLog;
+                else currentActiveLog = updatedLog;
+                renderActiveExercises(updatedLog);
             }));
         });
 
         document.querySelectorAll('.remove-set-btn').forEach(btn => {
             btn.addEventListener('click', withActiveLog(async (e) => {
                 const exId = e.target.dataset.exId;
-                currentActiveLog = await workoutEngine.removeLastSet(currentActiveLog.id, exId);
-                renderActiveExercises(currentActiveLog);
+                const log = isEditingHistory ? historyViewLog : currentActiveLog;
+                const updatedLog = await workoutEngine.removeLastSet(log.id, exId);
+                if (isEditingHistory) historyViewLog = updatedLog;
+                else currentActiveLog = updatedLog;
+                renderActiveExercises(updatedLog);
             }));
         });
 
@@ -398,8 +569,35 @@ document.addEventListener('DOMContentLoaded', async () => {
             btn.addEventListener('click', withActiveLog(async (e) => {
                 const exId = e.target.dataset.exId;
                 if (confirm('Remove this exercise from current workout?')) {
-                    currentActiveLog = await workoutEngine.removeExercise(currentActiveLog.id, exId);
-                    renderActiveExercises(currentActiveLog);
+                    const log = isEditingHistory ? historyViewLog : currentActiveLog;
+                    const updatedLog = await workoutEngine.removeExercise(log.id, exId);
+                    if (isEditingHistory) historyViewLog = updatedLog;
+                    else currentActiveLog = updatedLog;
+                    renderActiveExercises(updatedLog);
+                }
+            }));
+        });
+
+        // Attach promote target listener
+        document.querySelectorAll('.promote-target-btn').forEach(btn => {
+            btn.addEventListener('click', withActiveLog(async (e) => {
+                const exId = e.target.dataset.exId;
+                const log = isEditingHistory ? historyViewLog : currentActiveLog;
+                const ex = log.exercises.find(ex => ex.id === exId);
+                if (!ex) return;
+
+                const msg = `Update future targets for "${ex.name}" based on this performance?\n\n` +
+                             `New Target Weight: ${ex.actualSets[ex.actualSets.length - 1].actualWeight}${ex.actualSets[0].unit}\n` +
+                             `New Target Reps: ${ex.actualSets.map(s => s.actualReps || s.targetReps).join(', ')}`;
+
+                if (confirm(msg)) {
+                    const sync = confirm('Apply this target to ALL days where this exercise appears?');
+                    try {
+                        await workoutEngine.promoteToTarget(ex, templateService, sync);
+                        alert('Targets updated successfully!');
+                    } catch (error) {
+                        alert('Promotion failed: ' + error.message);
+                    }
                 }
             }));
         });
@@ -452,9 +650,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     addExistingExConfirm.addEventListener('click', withActiveLog(async () => {
         const exTemplate = JSON.parse(existingExSelect.value);
-        currentActiveLog = await workoutEngine.addExtraExercise(currentActiveLog.id, exTemplate);
+        const log = isEditingHistory ? historyViewLog : currentActiveLog;
+        const updatedLog = await workoutEngine.addExtraExercise(log.id, exTemplate);
+        if (isEditingHistory) historyViewLog = updatedLog;
+        else currentActiveLog = updatedLog;
         addExModal.style.display = 'none';
-        renderActiveExercises(currentActiveLog);
+        renderActiveExercises(updatedLog);
     }));
 
     addManualExConfirm.addEventListener('click', withActiveLog(async () => {
@@ -482,26 +683,31 @@ document.addEventListener('DOMContentLoaded', async () => {
             notes: []
         };
 
-        currentActiveLog = await workoutEngine.addExtraExercise(currentActiveLog.id, manualExTemplate);
+        const log = isEditingHistory ? historyViewLog : currentActiveLog;
+        const updatedLog = await workoutEngine.addExtraExercise(log.id, manualExTemplate);
+        if (isEditingHistory) historyViewLog = updatedLog;
+        else currentActiveLog = updatedLog;
         addExModal.style.display = 'none';
-        renderActiveExercises(currentActiveLog);
+        renderActiveExercises(updatedLog);
     }));
 
     completeWorkoutBtn.addEventListener('click', withActiveLog(async () => {
         if (confirm('Complete workout?')) {
-            await workoutEngine.completeWorkout(currentActiveLog.id);
+            const log = isEditingHistory ? historyViewLog : currentActiveLog;
+            await workoutEngine.completeWorkout(log.id);
             if (!isEditingHistory) {
                 alert('Workout completed and saved!');
             }
             activeWorkoutScreen.style.display = 'none';
             if (isEditingHistory) {
                 historyScreen.style.display = 'block';
+                historyViewLog = null;
+                isEditingHistory = false;
                 await renderHistory();
             } else {
+                currentActiveLog = null;
                 startWorkoutBtn.style.display = 'block';
             }
-            currentActiveLog = null;
-            isEditingHistory = false;
         }
     }));
 
@@ -509,11 +715,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         activeWorkoutScreen.style.display = 'none';
         if (isEditingHistory) {
             historyScreen.style.display = 'block';
+            historyViewLog = null;
+            isEditingHistory = false;
+            // Restore active workout screen if it was there
+            if (currentActiveLog) {
+                activeWorkoutScreen.style.display = 'block';
+                renderActiveExercises(currentActiveLog);
+            }
         } else {
+            currentActiveLog = null;
             startWorkoutBtn.style.display = 'block';
         }
-        currentActiveLog = null;
-        isEditingHistory = false;
     });
 
     // --- History & Progression UI Logic ---
@@ -524,9 +736,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (isHidden) {
             await renderHistory();
         } else {
-            // If hiding history, also hide details if they were open
-            activeWorkoutScreen.style.display = 'none';
-            isEditingHistory = false;
+            // If hiding history, also hide details if they were open from history
+            if (isEditingHistory) {
+                activeWorkoutScreen.style.display = 'none';
+                historyViewLog = null;
+                isEditingHistory = false;
+                // If there was an active workout, show it again
+                if (currentActiveLog) {
+                    activeWorkoutScreen.style.display = 'block';
+                    renderActiveExercises(currentActiveLog);
+                }
+            }
         }
     });
 
@@ -555,6 +775,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </div>
                 <div>
                     <button class="view-log-btn" data-log-id="${log.id}">View Details</button>
+                    <button class="export-log-btn" data-log-id="${log.id}">Export</button>
                     <button class="delete-log-btn" data-log-id="${log.id}" style="color: red;">Delete</button>
                 </div>
             `;
@@ -566,9 +787,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             btn.addEventListener('click', async (e) => {
                 const logId = e.target.dataset.logId;
                 const log = await workoutEngine.getLogById(logId);
-                currentActiveLog = log;
+                historyViewLog = log;
                 isEditingHistory = true;
                 showActiveWorkout(log);
+            });
+        });
+
+        document.querySelectorAll('.export-log-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const logId = e.target.dataset.logId;
+                const log = await workoutEngine.getLogById(logId);
+                if (log) {
+                    await jsonTransferService.exportWorkoutLog(log);
+                    alert('Workout log exported successfully.');
+                }
             });
         });
 

@@ -46,7 +46,7 @@ class WorkoutEngine {
                 defaultWeight: { ...ex.defaultWeight },
                 repGoalType: ex.repGoalType,
                 targetSets: ex.targetSets.map(s => ({ ...s })),
-                notes: [...ex.notes]
+                notes: ex.notes // Keep as string
             },
             // Pre-generate actual sets based on target sets
             actualSets: ex.targetSets.map(s => ({
@@ -195,6 +195,57 @@ class WorkoutEngine {
      */
     async deleteWorkoutLog(logId) {
         await persistenceService.delete('workoutLogs', logId);
+    }
+
+    /**
+     * Promotes the actual performance from a logged exercise to the program template.
+     * (PLAN-008 | R14 | LLD-008)
+     */
+    async promoteToTarget(logExercise, templateService, syncAcrossDays = false) {
+        if (!logExercise.templateExerciseId) {
+            throw new Error('This exercise is not linked to a program template.');
+        }
+
+        // 1. Prepare new target data based on actuals
+        const lastWeight = logExercise.actualSets.length > 0
+            ? (logExercise.actualSets[logExercise.actualSets.length - 1].actualWeight || 0)
+            : 0;
+
+        const lastUnit = logExercise.actualSets.length > 0
+            ? (logExercise.actualSets[logExercise.actualSets.length - 1].unit || 'kg')
+            : 'kg';
+
+        const newTargetSets = logExercise.actualSets.map(s => ({
+            setNumber: s.setNumber,
+            targetReps: s.actualReps || s.targetReps || 0
+        }));
+
+        const newData = {
+            defaultWeight: {
+                value: lastWeight,
+                unit: lastUnit,
+                label: 'Promoted from history'
+            },
+            targetSets: newTargetSets
+        };
+
+        // 2. Find the dayId for this exercise in the template
+        const program = await templateService.getProgram();
+        let targetDayId = null;
+
+        for (const day of program.days) {
+            if (day.exercises.some(e => e.id === logExercise.templateExerciseId)) {
+                targetDayId = day.id;
+                break;
+            }
+        }
+
+        if (!targetDayId) {
+            throw new Error('Could not find the original day in the template.');
+        }
+
+        // 3. Update the template
+        await templateService.updateExercise(targetDayId, logExercise.templateExerciseId, newData, syncAcrossDays);
     }
 }
 

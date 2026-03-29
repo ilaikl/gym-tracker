@@ -41,8 +41,24 @@
 (PLAN-004 | R8 | LLD-004)
 - [x] Implement detailed view and editing for historical logs in `app.js`
 (PLAN-004 | R8 | LLD-004)
+- [x] Fix: Separate active workout from history view to prevent state corruption
+(PLAN-004 | R8 | LLD-004)
 - [x] Add delete buttons to History screen items
 (PLAN-004 | R8 | LLD-004)
+- [x] Implement "Resume Workout" from draft
+(PLAN-003 | R3 | LLD-003)
+
+## Phase 9 — Localization & UI Alignment
+- [x] Set global alignment to left in `style.css`
+(PLAN-009 | R6)
+- [x] Change language to English and direction to LTR in `index.html`
+(PLAN-009 | R6)
+- [x] Update `AppInitializer.js` to seed data in English
+(PLAN-009 | R6)
+- [x] Review and update `README.md` with English examples
+(PLAN-009 | R6)
+- [x] Verify all UI components are correctly left-aligned
+(PLAN-009 | R6)
 
 ## Phase 5 — Polishing & Seed Data
 - [x] Implement `AppInitializer` with seed program data
@@ -52,17 +68,19 @@
 - [x] Final UI/UX review and bug fixes
 (PLAN-005 | R3 | LLD-005)
 
-## Phase 6 — Partial Data Management
-- [x] Add specific Export Program/History buttons to UI
+## Phase 6 — Partial and Granular Data Management
+- [x] Relocate Export Program/History buttons inside respective UI sections (only visible when viewed)
 (PLAN-006 | R5 | LLD-006)
-- [x] Implement `exportProgram` and `exportHistory` in `JSONTransferService`
+- [x] Implement `exportWorkoutLog` in `JSONTransferService` for single-day export
+(PLAN-006 | R9 | LLD-006)
+- [x] Update History list to include individual "Export" buttons for each log
+(PLAN-006 | R9 | LLD-006)
+- [x] Reorganize Backup/Restore section to the bottom as "Data Management"
 (PLAN-006 | R5 | LLD-006)
-- [x] Implement `mergeLogs` in `PersistenceService`
+- [x] Add info button and descriptions for import/export capabilities
 (PLAN-006 | R5 | LLD-006)
-- [x] Update `importData` to support partial merges for history and programs
-(PLAN-006 | R5 | LLD-006)
-- [x] Verify partial import/export functionality
-(PLAN-006 | R5 | LLD-006)
+- [x] Verify granular and context-aware data management functionality
+(PLAN-006 | R5, R9 | LLD-006)
 
 ## Phase 7 — Documentation & Infrastructure Support
 - [x] Create comprehensive `README.md` with JSON examples
@@ -71,3 +89,66 @@
 (PLAN-007 | R11)
 - [x] Update project documentation (Requirements, Plan, Tasks) to reflect changes
 (PLAN-007 | R11)
+
+## Phase 8 — Advanced Exercise & Target Management
+- [x] Implement inline recent history in Workout and Program views
+(PLAN-008 | R12 | LLD-008)
+- [x] Implement global exercise target synchronization in `TemplateService`
+(PLAN-008 | R13 | LLD-008)
+- [x] Add "Apply to all days" option to Exercise Editor UI
+(PLAN-008 | R13 | LLD-008)
+- [x] Implement "Set as Target" logic in `WorkoutEngine`
+(PLAN-008 | R14 | LLD-008)
+- [x] Add "Set as Target" buttons to Workout Log views
+(PLAN-008 | R14 | LLD-008)
+- [x] Verify contextual history and target promotion functionality
+(PLAN-008 | R12, R13, R14 | LLD-008)
+
+- [x] Implement target weight and reps indication in workout sets
+(PLAN-008 | R3, R13 | LLD-008)
+- [x] Update Exercise Editor to allow full target editing (weight, sets, reps)
+(PLAN-008 | R1 | LLD-008)
+- [x] Improve "Set Target" confirmation with specific performance details
+(PLAN-008 | R14 | LLD-008)
+- [x] Verify all target management refinements
+(PLAN-008 | R1, R3, R13, R14 | LLD-008)
+
+## Phase 10 — Exercise Cues & Form Tips
+- [x] Update `AppInitializer.js` with initial exercise cues
+(PLAN-010 | R15 | LLD-010)
+- [x] Add "Notes/Cues" field to the Exercise Editor in `index.html`
+(PLAN-010 | R15 | LLD-010)
+- [x] Update `js/app.js` to render cues in Active Workout and Program screens
+(PLAN-010 | R15 | LLD-010)
+- [x] Implement saving/editing cues in the Program Editor
+(PLAN-010 | R15 | LLD-010)
+- [x] Verify cues visibility and editability across the app
+(PLAN-010 | R15 | LLD-010)
+
+## Phase 11 — Nutrition Tracking
+- [ ] Extend `PersistenceService` for `nutritionLogs` and `ingredients`
+(PLAN-011 | R16, R17 | LLD-011)
+- [ ] Implement `IngredientService` for searching and saving items
+(PLAN-011 | R17 | LLD-011)
+- [ ] Implement `NutritionService` for daily logging and calculations
+(PLAN-011 | R16 | LLD-011)
+- [ ] Create Nutrition screen for adding meals and ingredients
+(PLAN-011 | R16 | LLD-011)
+- [ ] Add ingredient search dropdown with auto-fill macros
+(PLAN-011 | R17 | LLD-011)
+- [ ] Verify nutritional intake calculations and persistence
+(PLAN-011 | R16 | LLD-011)
+
+## Phase 12 — Nutritional Targets, Weekly Summaries & UI Overhaul
+- [ ] Add nutritional target settings (Train/Rest days) to `SettingsUI`
+(PLAN-012 | R18 | LLD-012)
+- [ ] Implement workout-aware target comparison in Nutrition views
+(PLAN-012 | R18 | LLD-012)
+- [ ] Implement weekly nutritional summary in `AnalyticsService`
+(PLAN-012 | R18 | LLD-012)
+- [ ] Design and implement new navigation (Tabs/Drawer) for multi-section UI
+(PLAN-012 | R19 | LLD-012)
+- [ ] Apply "Enhanced UI" professional CSS theme to all screens
+(PLAN-012 | R19 | LLD-012)
+- [ ] Verify target synchronization and weekly summaries functionality
+(PLAN-012 | R18, R19 | LLD-012)

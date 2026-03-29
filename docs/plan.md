@@ -37,13 +37,23 @@
 ## PLAN-004: History and Exercise Progress
 **Related Requirements:** R6, R8
 **Priority:** Medium
-**Description:** Implement screens for reviewing past workouts and tracking exercise progression over time using stored IDs. This includes full-log detail views, editing historical logs, and log deletion.
+**Description:** Implement screens for reviewing past workouts and tracking exercise progression over time using stored IDs. This includes full-log detail views, editing historical logs, and log deletion. **Enhanced to support concurrent active workout preservation.**
 **Technical Scope:**
-- **Affected modules:** `HistoryUI`, `AnalyticsService`, `WorkoutEngine`
+- **Affected modules:** `HistoryUI`, `AnalyticsService`, `WorkoutEngine`, `AppUI`
 - **Data model impact:** Querying existing `WorkoutLogs` and updating them.
 - **API changes:** Filtered data retrieval by exercise/date/body part; update/delete for existing logs.
-- **Risks:** Query performance with high volume of logs; accidental deletion of history.
+- **Risks:** Query performance with high volume of logs; accidental deletion of history; **state corruption between active/history logs.**
 - **Dependencies:** PLAN-003.
+
+## PLAN-009: Localization and UI Alignment
+**Related Requirements:** R6
+**Priority:** Medium
+**Description:** Transition the application from Hebrew/RTL to English/LTR and ensure all text is left-aligned.
+**Technical Scope:**
+- **Affected modules:** `AppInitializer`, `StyleSheet`, `index.html`, `README.md`
+- **Data model impact:** Seeded data translated to English.
+- **Risks:** Misaligned UI elements due to directional changes.
+- **Dependencies:** PLAN-005, PLAN-007.
 
 ## PLAN-005: Seed Data and Final Polishing
 **Related Requirements:** R1, R3
@@ -55,16 +65,17 @@
 - **Risks:** Seed data conflicts with existing user data.
 - **Dependencies:** PLAN-002.
 
-## PLAN-006: Partial Data Management
-**Related Requirements:** R5
+## PLAN-006: Partial and Granular Data Management
+**Related Requirements:** R5, R9
 **Priority:** Medium
-**Description:** Implement partial import and export for workout history and program templates to allow modular data updates.
+**Description:** Implement modular and granular data management, allowing users to export/import specific components (Full, History, Program, or Individual Log) directly from their relevant context in the UI.
 **Technical Scope:**
-- **Affected modules:** `JSONTransferService`, `PersistenceService`, `UI`
+- **Affected modules:** `JSONTransferService`, `PersistenceService`, `HistoryUI`, `ProgramUI`
 - **Data model impact:** Metadata tagging for partial files. Merge logic for workout logs.
-- **API changes:** New export/import methods for specific stores.
+- **API changes:** New export/import methods for specific stores and individual log records.
+- **UI changes:** Relocated Export buttons to Program and History sections (visible only when sections are opened); added single-day export to history list; simplified Backup/Restore into a final "Data Management" section with info guidance.
 - **Risks:** Overwriting data incorrectly or creating duplicates during merge.
-- **Dependencies:** PLAN-001.
+- **Dependencies:** PLAN-001, PLAN-004.
 
 ## PLAN-007: Documentation and Infrastructure Support
 **Related Requirements:** R11
@@ -76,3 +87,49 @@
 - **API changes:** Conditional build configuration.
 - **Risks:** Inaccurate examples leading to user confusion.
 - **Dependencies:** None.
+
+## PLAN-008: Advanced Exercise & Target Management
+**Related Requirements:** R12, R13, R14
+**Priority:** High
+**Description:** Enhance the UI and services to support contextual history, global target synchronization, and promoting actual performance to future targets.
+**Technical Scope:**
+- **Affected modules:** `ProgressionService`, `TemplateService`, `WorkoutEngine`, `UI`
+- **Data model impact:** Update `Program` template based on `WorkoutLog` actuals; inline editor positioning.
+- **API changes:** `ProgressionService.getRecentHistory(exerciseId)`, `TemplateService.syncExerciseAcrossDays(exerciseId, newData)`, `WorkoutEngine.promoteToTarget(logExerciseId)`.
+- **Infrastructure changes:** Move global `exerciseEditor` in DOM for inline editing.
+- **Risks:** Accidentally overwriting program targets; UI clutter from inline history/editor.
+- **Dependencies:** PLAN-003, PLAN-004.
+
+## PLAN-010: Exercise Cues and Form Tips
+**Related Requirements:** R15
+**Priority:** Medium
+**Description:** Implement default training cues and form tips for each exercise, visible during active workouts and manageable in the program editor.
+**Technical Scope:**
+- **Affected modules:** `AppInitializer`, `WorkoutEngine`, `ProgramUI`, `ActiveWorkoutUI`
+- **Data model impact:** Add `notes` field to `ExerciseTemplate` and `LoggedExercise`.
+- **API changes:** Update initial seed data with detailed cues.
+- **Risks:** UI clutter in active workout cards.
+- **Dependencies:** PLAN-003, PLAN-005.
+
+## PLAN-011: Nutrition Tracking Infrastructure and Daily Logging
+**Related Requirements:** R16, R17
+**Priority:** High
+**Description:** Establish the data models and persistence layer for nutrition tracking, including a daily meal log and a reusable ingredient database.
+**Technical Scope:**
+- **Affected modules:** `NutritionService`, `IngredientService`, `PersistenceService`
+- **Data model impact:** Implementation of `NutritionLog`, `Meal`, `Ingredient`, and `IngredientTemplate` (database).
+- **API changes:** Methods for adding/editing meals, searching ingredients, and calculating totals based on weight.
+- **Risks:** Complex UI for managing multiple ingredients per meal; ensuring accurate calculations.
+- **Dependencies:** PLAN-001.
+
+## PLAN-012: Nutritional Targets, Weekly Summaries, and UI Integration
+**Related Requirements:** R18, R19
+**Priority:** Medium
+**Description:** Implement nutritional target settings (rest vs. train days), weekly analytics, and a global UI overhaul to integrate workout and nutrition tracking.
+**Technical Scope:**
+- **Affected modules:** `NutritionService`, `AnalyticsService`, `AppUI`, `SettingsUI`
+- **Data model impact:** Settings for nutritional targets; workout-aware target selection.
+- **API changes:** Weekly summary generation; target comparison logic.
+- **Infrastructure changes:** New navigation layout (Tabs/Drawer) for multi-section support; CSS theme update for "Enhanced UI".
+- **Risks:** UI navigation complexity; performance of weekly calculations.
+- **Dependencies:** PLAN-011, PLAN-004.

@@ -57,7 +57,7 @@ Merges historical logs into your existing database. It will add new logs and upd
     {
       "id": "workout_2026-03-29_day_1_push_1711741620000",
       "date": "2026-03-29",
-      "dayName": "יום 1 – Push",
+      "dayName": "Day 1 - Push",
       "status": "completed",
       "exercises": [...]
     }
@@ -78,7 +78,7 @@ Replaces your current training program with a new one. This does **not** affect 
   },
   "program": {
     "id": "main_program",
-    "name": "תוכנית חדשה",
+    "name": "New Program",
     "days": [...]
   }
 }

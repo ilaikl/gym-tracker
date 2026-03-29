@@ -88,15 +88,28 @@ class TemplateService {
     /**
      * Updates an existing exercise in a specific day.
      */
-    async updateExercise(dayId, exerciseId, newData) {
+    async updateExercise(dayId, exerciseId, newData, syncAcrossDays = false) {
         const program = await this.getProgram();
-        const day = program.days.find(d => d.id === dayId);
-        if (!day) throw new Error('Day not found');
 
-        const exIndex = day.exercises.findIndex(e => e.id === exerciseId);
-        if (exIndex === -1) throw new Error('Exercise not found');
+        if (syncAcrossDays) {
+            // Update all instances of this exercise ID across all days
+            for (const day of program.days) {
+                const exIndex = day.exercises.findIndex(e => e.id === exerciseId);
+                if (exIndex !== -1) {
+                    day.exercises[exIndex] = { ...day.exercises[exIndex], ...newData };
+                }
+            }
+        } else {
+            // Update only in the specified day
+            const day = program.days.find(d => d.id === dayId);
+            if (!day) throw new Error('Day not found');
 
-        day.exercises[exIndex] = { ...day.exercises[exIndex], ...newData };
+            const exIndex = day.exercises.findIndex(e => e.id === exerciseId);
+            if (exIndex === -1) throw new Error('Exercise not found');
+
+            day.exercises[exIndex] = { ...day.exercises[exIndex], ...newData };
+        }
+
         await this.saveProgram(program);
     }
 

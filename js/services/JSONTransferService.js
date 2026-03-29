@@ -84,6 +84,30 @@ class JSONTransferService {
     }
 
     /**
+     * Exports a single workout log.
+     * @param {Object} log
+     */
+    async exportWorkoutLog(log) {
+        try {
+            const fullState = {
+                metadata: {
+                    appName: 'Workout Tracker',
+                    type: 'workout_log',
+                    schemaVersion: 1,
+                    exportedAt: new Date().toISOString()
+                },
+                workoutLogs: [log] // Import logic for history/merge will handle single log in array
+            };
+            const jsonString = JSON.stringify(fullState, null, 2);
+            this.downloadJSON(jsonString, `workout-log-${log.date}-${log.id}.json`);
+            console.info('JSONTransferService: Individual log exported successfully.');
+        } catch (error) {
+            console.error('JSONTransferService: Individual log export failed', error);
+            throw error;
+        }
+    }
+
+    /**
      * Triggers a browser download of the JSON string.
      */
     downloadJSON(content, fileName) {
@@ -119,7 +143,7 @@ class JSONTransferService {
                             await persistenceService.save('program', fullState.program);
                             console.info('JSONTransferService: Program imported successfully.');
                         }
-                    } else if (type === 'history') {
+                    } else if (type === 'history' || type === 'workout_log') {
                         if (fullState.workoutLogs) {
                             await persistenceService.mergeLogs(fullState.workoutLogs);
                             console.info('JSONTransferService: History merged successfully.');
