@@ -10,13 +10,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Initialize Database and App
     try {
+        console.info('App: Initializing PersistenceService...');
         await persistenceService.init();
         console.info('App: PersistenceService initialized.');
+
+        console.info('App: Initializing AppInitializer...');
         await appInitializer.init();
         console.info('App: AppInitializer completed.');
     } catch (error) {
         console.error('App: Failed to initialize app', error);
-        alert('Application initialization failed. Please try reloading the page.');
+        alert('Application initialization failed: ' + error.message);
     }
 
     // --- UI Elements ---

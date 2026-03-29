@@ -7,12 +7,19 @@ import { persistenceService } from './PersistenceService.js';
  */
 class AppInitializer {
     async init() {
-        const program = await templateService.getProgram();
-        if (!program || (program.days && program.days.length === 0)) {
-            console.info('AppInitializer: No program found, seeding default data.');
-            await this.seedDefaultProgram();
-        } else {
-            console.info('AppInitializer: Existing program found.');
+        console.info('AppInitializer: Initializing...');
+        try {
+            const program = await templateService.getProgram();
+            if (!program || (program.days && program.days.length === 0)) {
+                console.info('AppInitializer: No program found, seeding default data.');
+                await this.seedDefaultProgram();
+                console.info('AppInitializer: Seeding complete.');
+            } else {
+                console.info('AppInitializer: Existing program found.');
+            }
+        } catch (error) {
+            console.error('AppInitializer: Error during init', error);
+            throw error;
         }
     }
 

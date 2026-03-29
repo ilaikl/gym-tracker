@@ -11,8 +11,9 @@ class PersistenceService {
 
     async init() {
         if (this.db) return this.db;
+        if (this._initPromise) return this._initPromise;
 
-        return new Promise((resolve, reject) => {
+        this._initPromise = new Promise((resolve, reject) => {
             console.info('PersistenceService: Opening IndexedDB...', this.dbName, this.version);
             const request = indexedDB.open(this.dbName, this.version);
 
@@ -38,11 +39,13 @@ class PersistenceService {
             request.onsuccess = (event) => {
                 this.db = event.target.result;
                 console.info('PersistenceService: IndexedDB initialized successfully.');
+                this._initPromise = null;
                 resolve(this.db);
             };
 
             request.onerror = (event) => {
                 console.error('PersistenceService: Error initializing IndexedDB', event.target.error);
+                this._initPromise = null;
                 reject(event.target.error);
             };
 
@@ -50,10 +53,15 @@ class PersistenceService {
                 console.warn('PersistenceService: IndexedDB open blocked. Please close other tabs.');
             };
         });
+
+        return this._initPromise;
     }
 
     async getStore(storeName, mode = 'readonly') {
-        await this.init();
+        if (!this.db) {
+            console.warn(`PersistenceService: db not initialized when getting store "${storeName}". Re-initializing...`);
+            await this.init();
+        }
         const transaction = this.db.transaction(storeName, mode);
         return transaction.objectStore(storeName);
     }
