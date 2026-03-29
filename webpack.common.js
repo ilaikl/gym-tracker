@@ -2,6 +2,8 @@ const path = require('path');
 
 const isProduction = process.env.NODE_ENV === 'production';
 
+console.log('Building with isProduction:', isProduction);
+
 module.exports = {
   entry: {
     app: './js/app.js',
