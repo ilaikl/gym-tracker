@@ -202,7 +202,11 @@ As a user, I want to track my daily nutritional intake so that I can monitor my 
 - WHEN entering an ingredient's weight
 - THEN the system SHALL automatically calculate the total nutritional values based on its 100g reference values.
 - WHEN a day is completed
-- THEN the system SHALL display the total daily intake for each macronutrient and total calories.
+- THEN the system SHALL display the total daily intake for each macronutrient and total calories, along with a comparison against targets.
+- WHEN viewing the nutrition section
+- THEN the system SHALL display the current date prominently.
+- THEN the system SHALL display a "Finished" status in the Nutrition History if the day was completed via the "Finish Day & Summary" button.
+- THEN the system SHALL allow adding new dates to the history via a date picker.
 
 ### R17: Ingredient Database
 **User Story**
@@ -235,9 +239,28 @@ As a user, I want an improved and more professional-looking user interface so th
 **Acceptance Criteria**
 - WHEN the application is loaded
 - THEN the UI SHALL feature a modern, clean, and consistent design across all screens.
-- THEN navigation between "Workout" and "Nutrition" sections SHALL be intuitive and accessible.
+- THEN navigation between "Workout", "Nutrition", and "History" sections SHALL be intuitive and accessible.
 - THEN the visual feedback for actions (e.g., saving, completing, error messages) SHALL be clear and professional.
 - THEN the mobile-first layout SHALL be optimized for high-quality Android (PWA) experience.
+
+### R20: Nutrition History
+**User Story**
+As a user, I want to view a history of my daily nutritional intake so that I can track my progress over time.
+
+**Acceptance Criteria**
+- WHEN the user accesses the "Nutrition History" section
+- THEN the system SHALL display a list of previous days with their dates and a summary of intake (calories and macronutrients).
+- THEN the summary SHALL be compared against the target for that day (Training vs. Rest).
+- THEN the system SHALL use color coding (e.g., Green/Orange/Red) to indicate how close the intake was to the target.
+
+### R21: Meal Templates from History
+**User Story**
+As a user, I want to quickly add full meals from my history so that I don't have to re-enter ingredients for recurring meals.
+
+**Acceptance Criteria**
+- WHEN adding a new meal to the current nutrition log
+- THEN the system SHALL provide an option to search for and select a meal from history by name.
+- THEN selecting a historical meal SHALL automatically populate the new meal with all its ingredients and their respective nutritional values.
 
 ### R6: User Interface (Language and Alignment)
 **User Story**
@@ -248,6 +271,46 @@ As a user, I want the application to use English and be left-aligned so that it 
 - THEN the user interface SHALL be displayed in English.
 - THEN all text, forms, and UI components SHALL be left-aligned.
 - THEN the layout SHALL follow a Left-to-Right (LTR) direction.
+
+### R22: Nutritional Ranges and Criticality
+**User Story**
+As a user, I want to set nutritional targets as ranges (e.g., 2200-2300 calories) and define separate plus/minus tolerances (Criticality) for each macro, so I can accurately track how well I'm adhering to my goals.
+
+**Acceptance Criteria**
+- **WHEN** configuring nutritional targets in the Data Management section.
+- **THEN** the system SHALL allow setting a min/max range for calories, protein, carbs, and fats.
+- **THEN** the system SHALL allow setting a separate "plus tolerance" and "minus tolerance" for each macro (e.g., +50g/-10g protein).
+- **WHEN** viewing nutrition history.
+- **THEN** a macro SHALL be **GREEN** if it's within the min/max range.
+- **THEN** a macro SHALL be **YELLOW** if it's outside the range but within the specified plus or minus tolerance (criticality).
+- **THEN** a macro SHALL be **RED** if it's beyond the tolerance range.
+- **WHEN** calculating for different days.
+- **THEN** targets SHALL support separate ranges and tolerances for Training vs. Rest days.
+
+### R23: Nutrition Day Export
+**User Story**
+As a user, I want to export a single day of nutrition data so that I can share or move individual daily logs without transferring my entire history.
+
+**Acceptance Criteria**
+- **WHEN** the user views the nutrition history list
+- **THEN** the system SHALL provide an "Export" button for each nutrition day entry.
+- **WHEN** the user selects "Export" for a specific nutrition day
+- **THEN** the system SHALL generate a JSON file containing only that specific `NutritionLog` with correct metadata.
+- **WHEN** a single `NutritionLog` file is imported via the main "Import Data" button
+- **THEN** the system SHALL merge it into the nutrition history, avoiding duplicates by date.
+
+### R24: Meal Editing and Daily Update
+**User Story**
+As a user, I want to edit an existing meal in my nutrition log so that I can correct errors or update my intake for that day.
+
+**Acceptance Criteria**
+- **WHEN** viewing the nutrition log for a specific day
+- **THEN** the system SHALL provide an "Edit" button for each logged meal.
+- **WHEN** the user edits a meal
+- **THEN** the system SHALL allow modifying ingredients, weights, and nutritional values.
+- **WHEN** the meal is saved
+- **THEN** the system SHALL automatically update the daily totals and targets for that nutrition log.
+- **THEN** the system SHALL persist the updated meal data to the `NutritionLog` in IndexedDB.
 
 ## 3. Non-Functional Requirements
 

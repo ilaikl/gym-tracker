@@ -114,12 +114,12 @@
 ## PLAN-011: Nutrition Tracking Infrastructure and Daily Logging
 **Related Requirements:** R16, R17
 **Priority:** High
-**Description:** Establish the data models and persistence layer for nutrition tracking, including a daily meal log and a reusable ingredient database.
+**Description:** Establish the data models and persistence layer for nutrition tracking, including a daily meal log, a reusable ingredient database, and a date-specific navigation system.
 **Technical Scope:**
-- **Affected modules:** `NutritionService`, `IngredientService`, `PersistenceService`
-- **Data model impact:** Implementation of `NutritionLog`, `Meal`, `Ingredient`, and `IngredientTemplate` (database).
-- **API changes:** Methods for adding/editing meals, searching ingredients, and calculating totals based on weight.
-- **Risks:** Complex UI for managing multiple ingredients per meal; ensuring accurate calculations.
+- **Affected modules:** `NutritionService`, `IngredientService`, `PersistenceService`, `AppUI`
+- **Data model impact:** Implementation of `NutritionLog`, `Meal`, `Ingredient`, and `IngredientTemplate`.
+- **API changes:** Methods for daily log navigation, adding/editing meals, searching ingredients, and calculating totals.
+- **Risks:** Complex UI for managing multiple ingredients per meal; ensuring accurate calculations across historical dates.
 - **Dependencies:** PLAN-001.
 
 ## PLAN-012: Nutritional Targets, Weekly Summaries, and UI Integration
@@ -133,3 +133,39 @@
 - **Infrastructure changes:** New navigation layout (Tabs/Drawer) for multi-section support; CSS theme update for "Enhanced UI".
 - **Risks:** UI navigation complexity; performance of weekly calculations.
 - **Dependencies:** PLAN-011, PLAN-004.
+
+## PLAN-013: Nutrition History and Meal Management
+**Related Requirements:** R20, R21
+**Priority:** Medium
+**Description:** Implement a dedicated Nutrition History view and the ability to reuse full meals from history. Enhanced with 'Finished' status tracking and contextual date management.
+**Technical Scope:**
+- **Affected modules:** `NutritionService`, `AppUI`, `HistoryUI`
+- **Data model impact:** Retrieving and searching historical nutrition logs; `status` field in `NutritionLog`.
+- **API changes:** `NutritionService.getHistorySummaries()`, `NutritionService.findMealByName(name)`.
+- **UI changes:** New Nutrition History tab; meal selection search in the nutrition editor; completion badge in history; date picker for adding history entries.
+- **Risks:** Ensuring correct target selection (Training vs. Rest) for historical logs.
+- **Dependencies:** PLAN-011, PLAN-012.
+
+## PLAN-015: Nutritional Ranges and Criticality
+**Related Requirements:** R22
+**Priority:** Medium
+**Description:** Transition nutritional targets to use ranges (min/max) and separate plus/minus criticality (tolerance) values. Update evaluation logic to display color-coded status based on these ranges and tolerances.
+**Technical Scope:**
+- **Affected modules:** `NutritionService`, `AppInitializer`, `DataManagementUI`, `HistoryUI`
+- **Data model impact:** Expanded `settings.nutritionTargets` to include `min`, `max`, `critPlus`, and `critMinus`.
+- **API changes:** `NutritionService.evaluateStatus(totals, target)` updated for separate plus/minus tolerance logic.
+- **UI changes:** Enhanced target configuration in Data Management to include split tolerance fields; color-coded macros in history.
+- **Risks:** Migration of existing single-value or single-criticality targets to the new structure.
+- **Dependencies:** PLAN-011, PLAN-012.
+
+## PLAN-016: Granular Nutrition Management and Meal Editing
+**Related Requirements:** R23, R24
+**Priority:** High
+**Description:** Implement granular nutrition day export and the ability to edit existing meals within a daily nutrition log.
+**Technical Scope:**
+- **Affected modules:** `JSONTransferService`, `NutritionService`, `NutritionUI`
+- **Data model impact:** Metadata tagging for nutrition day exports.
+- **API changes:** `JSONTransferService.exportNutritionDay(date)`, `NutritionService.updateMeal(date, mealId, updatedMeal)`.
+- **UI changes:** Add "Export" button to Nutrition History rows; add "Edit" button to meal items in Nutrition section; implement meal editor modal (reusing add meal logic).
+- **Risks:** Inconsistent daily totals if meal updates are not correctly propagated.
+- **Dependencies:** PLAN-011, PLAN-013.

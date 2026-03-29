@@ -126,29 +126,95 @@
 (PLAN-010 | R15 | LLD-010)
 
 ## Phase 11 — Nutrition Tracking
-- [ ] Extend `PersistenceService` for `nutritionLogs` and `ingredients`
+- [x] Extend `PersistenceService` for `nutritionLogs` and `ingredients`
 (PLAN-011 | R16, R17 | LLD-011)
-- [ ] Implement `IngredientService` for searching and saving items
+- [x] Implement `IngredientService` for searching and saving items
 (PLAN-011 | R17 | LLD-011)
-- [ ] Implement `NutritionService` for daily logging and calculations
+- [x] Implement `NutritionService` for daily logging and calculations
 (PLAN-011 | R16 | LLD-011)
-- [ ] Create Nutrition screen for adding meals and ingredients
+- [x] Create Nutrition screen for adding meals and ingredients
 (PLAN-011 | R16 | LLD-011)
-- [ ] Add ingredient search dropdown with auto-fill macros
+- [x] Add ingredient search dropdown with auto-fill macros
 (PLAN-011 | R17 | LLD-011)
-- [ ] Verify nutritional intake calculations and persistence
+- [x] Verify nutritional intake calculations and persistence
 (PLAN-011 | R16 | LLD-011)
 
 ## Phase 12 — Nutritional Targets, Weekly Summaries & UI Overhaul
-- [ ] Add nutritional target settings (Train/Rest days) to `SettingsUI`
+- [x] Add nutritional target settings (Train/Rest days) to `SettingsUI`
 (PLAN-012 | R18 | LLD-012)
-- [ ] Implement workout-aware target comparison in Nutrition views
+- [x] Implement workout-aware target comparison in Nutrition views
 (PLAN-012 | R18 | LLD-012)
-- [ ] Implement weekly nutritional summary in `AnalyticsService`
+- [x] Implement weekly nutritional summary in `AnalyticsService` (Aggregated in `updateNutritionSummary`)
 (PLAN-012 | R18 | LLD-012)
-- [ ] Design and implement new navigation (Tabs/Drawer) for multi-section UI
+- [x] Design and implement new navigation (Tabs/Drawer) for multi-section UI
 (PLAN-012 | R19 | LLD-012)
-- [ ] Apply "Enhanced UI" professional CSS theme to all screens
+- [x] Apply "Enhanced UI" professional CSS theme to all screens
 (PLAN-012 | R19 | LLD-012)
-- [ ] Verify target synchronization and weekly summaries functionality
+- [x] Verify target synchronization and weekly summaries functionality
 (PLAN-012 | R18, R19 | LLD-012)
+
+### Phase 13 — Nutrition History and Meal Reusability
+- [x] Extend NutritionService for history summaries
+(PLAN-013 | R20 | LLD-013)
+- [x] Add Nutrition History screen and date navigation
+(PLAN-013 | R20 | LLD-013)
+- [x] Implement color-coded nutrition summary rows
+(PLAN-013 | R20 | LLD-013)
+- [x] Implement historical meal search and selection
+(PLAN-013 | R21 | LLD-013)
+- [x] Implement color-coded nutrition history summaries with "Finished" status
+(PLAN-013 | R20 | LLD-013)
+- [x] Implement date-specific nutrition log creation and navigation from history
+(PLAN-013 | R20 | LLD-013)
+- [x] Reorder application sections and navigation for logical grouping
+(PLAN-012 | R19 | LLD-012)
+- [x] Verify workout/nutrition classification logic and summary visibility
+(PLAN-013 | R18, R20 | LLD-013)
+
+## Phase 14 — Critical Bug Fixes (Nutrition UI)
+- [x] Fix `ReferenceError` by removing dead nutrition navigation code
+(PLAN-011 | R16)
+- [x] Fix "Add Meal" button reliability by adding input validation
+(PLAN-011 | R16)
+- [x] Fix "Add Day" button in Nutrition History (auto-save new logs)
+(PLAN-013 | R20)
+- [x] Fix color-coding in Nutrition History (handle target field naming)
+(PLAN-013 | R20)
+
+## Phase 15 — Nutritional Ranges and Criticality
+- [x] Update `requirements.md` with R22
+(PLAN-015 | R22 | LLD-015)
+- [x] Update `plan.md` with PLAN-015
+(PLAN-015 | R22 | LLD-015)
+- [x] Create LLD-015 document
+(PLAN-015 | R22 | LLD-015)
+- [x] Update `NutritionService` evaluation logic for ranges
+(PLAN-015 | R22 | LLD-015)
+- [x] Update `AppInitializer` with default ranges
+(PLAN-015 | R22 | LLD-015)
+- [x] Update Data Management UI (`index.html`, `app.js`)
+(PLAN-015 | R22 | LLD-015)
+- [x] Update Nutrition UI and History views
+(PLAN-015 | R22 | LLD-015)
+- [x] Implement split plus/minus tolerance (`critPlus`/`critMinus`)
+(PLAN-015 | R22 | LLD-015)
+- [x] Update `index.html` with separate tolerance fields
+(PLAN-015 | R22 | LLD-015)
+- [x] Update `app.js` to load/save split tolerances
+(PLAN-015 | R22 | LLD-015)
+- [x] Update `NutritionService.evaluateMacroStatus` for split tolerances
+(PLAN-015 | R22 | LLD-015)
+
+## Phase 16 — Granular Nutrition Management and Meal Editing
+- [x] Implement `exportNutritionLog` in `JSONTransferService` for single-day export
+(PLAN-016 | R23 | LLD-016)
+- [x] Update Nutrition History list to include individual "Export" buttons for each log
+(PLAN-016 | R23 | LLD-016)
+- [x] Implement `updateMeal` in `NutritionService`
+(PLAN-016 | R24 | LLD-016)
+- [x] Update Nutrition UI to include "Edit" button for meals
+(PLAN-016 | R24 | LLD-016)
+- [x] Implement meal editing flow in `app.js` (modal pre-filling and updating)
+(PLAN-016 | R24 | LLD-016)
+- [x] Verify granular export and meal editing functionality
+(PLAN-016 | R23, R24 | LLD-016)

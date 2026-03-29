@@ -17,10 +17,39 @@ class AppInitializer {
             } else {
                 console.info('AppInitializer: Existing program found.');
             }
+
+            // Seed default settings and nutritional targets if missing
+            const settings = await persistenceService.getById('settings', 'current');
+            if (!settings || !settings.nutritionTargets || !settings.nutritionTargets.trainingDay.calories.min) {
+                console.info('AppInitializer: Seeding default nutrition ranges.');
+                await this.seedDefaultSettings();
+            }
         } catch (error) {
             console.error('AppInitializer: Error during init', error);
             throw error;
         }
+    }
+
+    async seedDefaultSettings() {
+        const existingSettings = await persistenceService.getById('settings', 'current') || {};
+        const defaultSettings = {
+            ...existingSettings,
+            nutritionTargets: {
+                trainingDay: {
+                    calories: { min: 2200, max: 2300, critMinus: 100, critPlus: 100 },
+                    protein: { min: 145, max: 155, critMinus: 10, critPlus: 50 },
+                    carbs: { min: 200, max: 220, critMinus: 20, critPlus: 20 },
+                    fats: { min: 50, max: 60, critMinus: 10, critPlus: 10 }
+                },
+                restDay: {
+                    calories: { min: 2000, max: 2100, critMinus: 100, critPlus: 100 },
+                    protein: { min: 140, max: 150, critMinus: 10, critPlus: 50 },
+                    carbs: { min: 140, max: 160, critMinus: 20, critPlus: 20 },
+                    fats: { min: 50, max: 60, critMinus: 10, critPlus: 10 }
+                }
+            }
+        };
+        await persistenceService.save('settings', defaultSettings, 'current');
     }
 
     async seedDefaultProgram() {

@@ -13,22 +13,26 @@ class JSONTransferService {
             const program = await persistenceService.getAll('program');
             const workoutLogs = await persistenceService.getAll('workoutLogs');
             const settings = await persistenceService.getById('settings', 'current');
+            const nutritionLogs = await persistenceService.getAll('nutritionLogs');
+            const ingredients = await persistenceService.getAll('ingredients');
 
             const fullState = {
                 metadata: {
                     appName: 'Workout Tracker',
-                    schemaVersion: 1,
+                    schemaVersion: 2,
                     exportedAt: new Date().toISOString()
                 },
-                program: program[0] || null, // Assuming one active program as per LLD
+                program: program[0] || null,
                 workoutLogs: workoutLogs,
+                nutritionLogs: nutritionLogs,
+                ingredients: ingredients,
                 settings: settings || {}
             };
 
             const jsonString = JSON.stringify(fullState, null, 2);
-            this.downloadJSON(jsonString, `workout-tracker-export-${new Date().toISOString().split('T')[0]}.json`);
+            this.downloadJSON(jsonString, `workout-tracker-backup-${new Date().toISOString().split('T')[0]}.json`);
 
-            console.info('JSONTransferService: Data exported successfully.');
+            console.info('JSONTransferService: Full data exported successfully.');
         } catch (error) {
             console.error('JSONTransferService: Export failed', error);
             throw error;
@@ -108,6 +112,30 @@ class JSONTransferService {
     }
 
     /**
+     * Exports a single nutrition log.
+     * @param {Object} log
+     */
+    async exportNutritionLog(log) {
+        try {
+            const fullState = {
+                metadata: {
+                    appName: 'Workout Tracker',
+                    type: 'nutrition_log',
+                    schemaVersion: 1,
+                    exportedAt: new Date().toISOString()
+                },
+                nutritionLogs: [log]
+            };
+            const jsonString = JSON.stringify(fullState, null, 2);
+            this.downloadJSON(jsonString, `nutrition-log-${log.date}.json`);
+            console.info('JSONTransferService: Individual nutrition log exported successfully.');
+        } catch (error) {
+            console.error('JSONTransferService: Individual nutrition log export failed', error);
+            throw error;
+        }
+    }
+
+    /**
      * Triggers a browser download of the JSON string.
      */
     downloadJSON(content, fileName) {
@@ -147,6 +175,14 @@ class JSONTransferService {
                         if (fullState.workoutLogs) {
                             await persistenceService.mergeLogs(fullState.workoutLogs);
                             console.info('JSONTransferService: History merged successfully.');
+                        }
+                    } else if (type === 'nutrition_log') {
+                        if (fullState.nutritionLogs) {
+                            // Merge single or multiple nutrition logs
+                            for (const log of fullState.nutritionLogs) {
+                                await persistenceService.save('nutritionLogs', log);
+                            }
+                            console.info('JSONTransferService: Nutrition history merged successfully.');
                         }
                     } else {
                         // Full import (replace all)

@@ -3,7 +3,7 @@
  * (PLAN-001 | R5 | LLD-001)
  */
 class PersistenceService {
-    constructor(dbName = 'WorkoutTrackerDB', version = 1) {
+    constructor(dbName = 'WorkoutTrackerDB', version = 2) {
         this.dbName = dbName;
         this.version = version;
         this.db = null;
@@ -33,6 +33,16 @@ class PersistenceService {
 
                 if (!db.objectStoreNames.contains('settings')) {
                     db.createObjectStore('settings');
+                }
+
+                // Phase 11: Nutrition Tracking
+                if (!db.objectStoreNames.contains('nutritionLogs')) {
+                    const nutritionStore = db.createObjectStore('nutritionLogs', { keyPath: 'id' });
+                    nutritionStore.createIndex('date', 'date', { unique: true });
+                }
+
+                if (!db.objectStoreNames.contains('ingredients')) {
+                    db.createObjectStore('ingredients', { keyPath: 'id' });
                 }
             };
 
@@ -121,6 +131,8 @@ class PersistenceService {
         await this.clearStore('program');
         await this.clearStore('workoutLogs');
         await this.clearStore('settings');
+        await this.clearStore('nutritionLogs');
+        await this.clearStore('ingredients');
 
         // Populate stores
         if (fullState.program) {
@@ -137,7 +149,19 @@ class PersistenceService {
             await this.save('settings', fullState.settings, 'current');
         }
 
-        console.info('PersistenceService: All data replaced from imported state.');
+        if (fullState.nutritionLogs && Array.isArray(fullState.nutritionLogs)) {
+            for (const log of fullState.nutritionLogs) {
+                await this.save('nutritionLogs', log);
+            }
+        }
+
+        if (fullState.ingredients && Array.isArray(fullState.ingredients)) {
+            for (const ing of fullState.ingredients) {
+                await this.save('ingredients', ing);
+            }
+        }
+
+        console.info('PersistenceService: All data replaced from imported state (including Nutrition).');
     }
 
     /**

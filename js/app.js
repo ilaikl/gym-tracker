@@ -4,6 +4,8 @@ import { templateService } from './services/TemplateService.js';
 import { workoutEngine } from './services/WorkoutEngine.js';
 import { progressionService } from './services/ProgressionService.js';
 import { appInitializer } from './services/AppInitializer.js';
+import { nutritionService } from './services/NutritionService.js';
+import { ingredientService } from './services/IngredientService.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('App: DOM Content Loaded');
@@ -21,6 +23,654 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error('App: Failed to initialize app', error);
         alert('Application initialization failed: ' + error.message);
     }
+
+    // --- Navigation Logic ---
+    const navButtons = document.querySelectorAll('#navigation button');
+    const sections = document.querySelectorAll('.app-section');
+
+    function switchSection(targetId) {
+        sections.forEach(sec => sec.style.display = 'none');
+        const targetSection = document.getElementById(targetId);
+        if (targetSection) targetSection.style.display = 'block';
+
+        navButtons.forEach(b => {
+            const btnSectionId = b.id.replace('nav-', '').replace('-btn', '') + '-section';
+            if (btnSectionId === targetId) {
+                b.classList.add('active');
+            } else {
+                b.classList.remove('active');
+            }
+        });
+
+        if (targetId === 'nutrition-section') {
+            renderNutritionDay();
+        } else if (targetId === 'nutrition-history-section') {
+            renderNutritionHistory();
+        } else if (targetId === 'history-section') {
+            renderHistory();
+        } else if (targetId === 'program-section') {
+            renderProgram();
+        }
+    }
+
+    navButtons.forEach(btn => {
+        btn.onclick = () => {
+            const sectionId = btn.id.replace('nav-', '').replace('-btn', '') + '-section';
+            switchSection(sectionId);
+        };
+    });
+
+    // --- Nutrition UI Variables ---
+    const mealsList = document.getElementById('meals-list');
+    const addMealBtn = document.getElementById('add-meal-btn');
+    const finishNutDayBtn = document.getElementById('finish-nut-day-btn');
+    const ingredientModal = document.getElementById('ingredient-modal');
+    const ingSearchInput = document.getElementById('ing-search-input');
+    const ingSearchResults = document.getElementById('ing-search-results');
+    const ingNameInput = document.getElementById('ing-name');
+    const ingWeightInput = document.getElementById('ing-weight');
+    const ingCal100Input = document.getElementById('ing-cal-100');
+    const ingPro100Input = document.getElementById('ing-pro-100');
+    const ingCarb100Input = document.getElementById('ing-carb-100');
+    const ingFat100Input = document.getElementById('ing-fat-100');
+    const saveIngredientBtn = document.getElementById('save-ingredient-btn');
+    const closeIngredientModalBtn = document.getElementById('close-ingredient-modal');
+    const totalCaloriesSpan = document.getElementById('total-calories');
+    const totalProteinSpan = document.getElementById('total-protein');
+    const totalCarbsSpan = document.getElementById('total-carbs');
+    const totalFatsSpan = document.getElementById('total-fats');
+    const showMealHistoryBtn = document.getElementById('show-meal-history-btn');
+    const mealHistoryModal = document.getElementById('meal-history-modal');
+    const mealSearchInput = document.getElementById('meal-search-input');
+    const mealSearchResults = document.getElementById('meal-search-results');
+    const closeMealHistoryModalBtn = document.getElementById('close-meal-history-modal');
+
+    const editMealModal = document.getElementById('edit-meal-modal');
+    const editMealNameInput = document.getElementById('edit-meal-name');
+    const editMealIngredientsList = document.getElementById('edit-meal-ingredients-list');
+    const editMealAddIngBtn = document.getElementById('edit-meal-add-ing-btn');
+    const saveEditMealBtn = document.getElementById('save-edit-meal-btn');
+    const closeEditMealModalBtn = document.getElementById('close-edit-meal-modal');
+    const ingredientModalTitle = document.getElementById('ingredient-modal-title');
+
+    let currentNutritionLog = null;
+    let currentNutritionDate = new Date().toISOString().split('T')[0];
+    let currentSelectedMealId = null;
+    let currentEditingMealId = null;
+    let temporaryEditingMeal = null; // To hold the meal being edited before saving
+
+    // --- Nutrition History Logic ---
+    const addNutDayInput = document.getElementById('add-nut-day-input');
+    const addNutDayBtn = document.getElementById('add-nut-day-btn');
+
+    if (addNutDayBtn) {
+        addNutDayBtn.onclick = async () => {
+            const date = addNutDayInput.value;
+            if (!date) {
+                alert('Please select a date.');
+                return;
+            }
+            await nutritionService.getLog(date); // Creates and saves if doesn't exist
+            await renderNutritionHistory();
+            alert(`Nutrition log for ${date} initialized.`);
+        };
+    }
+
+    async function renderNutritionHistory() {
+        const historyList = document.getElementById('nutrition-history-list');
+        historyList.innerHTML = '<p>Loading history...</p>';
+
+        const summaries = await nutritionService.getHistorySummaries();
+
+        if (summaries.length === 0) {
+            historyList.innerHTML = '<p>No nutrition history found.</p>';
+            return;
+        }
+
+        historyList.innerHTML = summaries.map(s => {
+            const getStatusColor = (macro) => {
+                const status = s.status && s.status.detail ? s.status.detail[macro] : s.status;
+                if (status === 'green') return '#27ae60';
+                if (status === 'yellow' || status === 'orange') return '#f39c12';
+                return '#e74c3c';
+            };
+
+            const getOverallColor = () => {
+                const overall = s.status && s.status.overall ? s.status.overall : s.status;
+                if (overall === 'green') return '#27ae60';
+                if (overall === 'yellow' || overall === 'orange') return '#f39c12';
+                return '#e74c3c';
+            };
+
+            const formatTarget = (target) => {
+                if (target && typeof target === 'object' && target.min !== undefined) {
+                    return `${target.min}-${target.max}`;
+                }
+                return target || 0;
+            };
+
+            const targets = s.targetData || s.target;
+
+            return `
+            <div class="history-item" style="border-left: 8px solid ${getOverallColor()}; padding: 15px; margin-bottom: 15px; background: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); cursor: pointer;" onclick="window.navToNutritionDate('${s.date}')">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <strong style="font-size: 1.1em;">${s.date}</strong>
+                        ${s.isCompleted ? '<span style="background: #27ae60; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7em;">FINISHED</span>' : ''}
+                    </div>
+                    <span style="font-size: 0.85em; background: #f0f0f0; padding: 3px 8px; border-radius: 12px; color: #555;">
+                        ${s.isTrainingDay ? 'Training Day' : 'Rest Day'}
+                    </span>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; font-size: 0.9em;">
+                    <div style="color: ${getStatusColor('calories')}"><strong>Cal:</strong> ${Math.round(s.totals.calories)} (${formatTarget(targets.calories || targets.cal)})</div>
+                    <div style="color: ${getStatusColor('protein')}"><strong>Pro:</strong> ${Math.round(s.totals.protein)} (${formatTarget(targets.protein || targets.pro)})g</div>
+                    <div style="color: ${getStatusColor('carbs')}"><strong>Carb:</strong> ${Math.round(s.totals.carbs)} (${formatTarget(targets.carbs || targets.carb)})g</div>
+                    <div style="color: ${getStatusColor('fats')}"><strong>Fat:</strong> ${Math.round(s.totals.fats)} (${formatTarget(targets.fats || targets.fat)})g</div>
+                </div>
+                <div style="margin-top: 10px; display: flex; justify-content: flex-end;">
+                    <button class="btn-secondary export-nut-log-btn" data-date="${s.date}" style="font-size: 0.8em; padding: 4px 8px;">Export</button>
+                </div>
+            </div>
+        `;}).join('');
+
+            // Add event listeners for Export button in Nutrition History
+            document.querySelectorAll('.export-nut-log-btn').forEach(btn => {
+                btn.onclick = async (e) => {
+                    e.stopPropagation(); // Don't navigate when clicking export
+                    const date = btn.dataset.date;
+                    const log = await nutritionService.getLog(date);
+                    if (log) {
+                        await jsonTransferService.exportNutritionLog(log);
+                    }
+                };
+            });
+        }
+
+    // Global helper for navigation from history
+    window.navToNutritionDate = (date) => {
+        currentNutritionDate = date;
+        switchSection('nutrition-section');
+    };
+    async function showMealEditor(meal) {
+        currentEditingMealId = meal.id;
+        temporaryEditingMeal = JSON.parse(JSON.stringify(meal)); // Deep copy for editing
+
+        editMealNameInput.value = temporaryEditingMeal.name;
+        renderEditMealIngredients();
+        editMealModal.style.display = 'block';
+    }
+
+    function renderEditMealIngredients() {
+        editMealIngredientsList.innerHTML = '';
+        temporaryEditingMeal.ingredients.forEach((ing, index) => {
+            const item = document.createElement('div');
+            item.className = 'edit-ing-item';
+            item.style = 'display: flex; align-items: center; gap: 10px; margin-bottom: 10px; padding: 10px; background: #f9f9f9; border-radius: 4px;';
+            item.innerHTML = `
+                <div style="flex: 2;"><strong>${ing.name}</strong></div>
+                <div style="flex: 1;">
+                    <input type="number" class="edit-ing-weight" data-index="${index}" value="${ing.weight}" style="width: 70px;"> g
+                </div>
+                <div style="flex: 1; font-size: 0.85em; color: #666;">
+                    ${Math.round(ing.calories)} cal
+                </div>
+                <button class="remove-edit-ing-btn" data-index="${index}" style="color: red; background: none; border: none; cursor: pointer;">✕</button>
+            `;
+            editMealIngredientsList.appendChild(item);
+        });
+
+        // Add listeners for weight change
+        document.querySelectorAll('.edit-ing-weight').forEach(input => {
+            input.onchange = async () => {
+                const index = parseInt(input.dataset.index);
+                const newWeight = parseFloat(input.value);
+                if (!isNaN(newWeight) && newWeight > 0) {
+                    const ing = temporaryEditingMeal.ingredients[index];
+                    const ingTemplate = await ingredientService.getById(ing.id);
+                    if (ingTemplate) {
+                        const macros = ingredientService.calculateMacros(ingTemplate, newWeight);
+                        ing.weight = newWeight;
+                        Object.assign(ing, macros);
+                        renderEditMealIngredients(); // Re-render to update cal display
+                    }
+                }
+            };
+        });
+
+        // Add listeners for removal
+        document.querySelectorAll('.remove-edit-ing-btn').forEach(btn => {
+            btn.onclick = () => {
+                const index = parseInt(btn.dataset.index);
+                temporaryEditingMeal.ingredients.splice(index, 1);
+                renderEditMealIngredients();
+            };
+        });
+    }
+
+    editMealAddIngBtn.onclick = () => {
+        currentSelectedMealId = 'temporary'; // Special flag for edit modal
+        ingredientModalTitle.textContent = 'Add Ingredient to Meal';
+        openIngredientModal();
+    };
+
+    saveEditMealBtn.onclick = async () => {
+        temporaryEditingMeal.name = editMealNameInput.value.trim();
+        if (!temporaryEditingMeal.name) {
+            alert('Please enter a meal name.');
+            return;
+        }
+
+        await nutritionService.updateMeal(currentNutritionLog, currentEditingMealId, temporaryEditingMeal);
+        editMealModal.style.display = 'none';
+        renderMeals();
+        updateNutritionSummary();
+    };
+
+    closeEditMealModalBtn.onclick = () => {
+        editMealModal.style.display = 'none';
+        currentEditingMealId = null;
+        temporaryEditingMeal = null;
+    };
+
+    async function renderNutritionDay(date) {
+        if (date) currentNutritionDate = date;
+        currentNutritionLog = await nutritionService.getLog(currentNutritionDate);
+        updateNutritionSummary();
+        renderMeals();
+    }
+
+    async function updateNutritionSummary() {
+        const totals = nutritionService.calculateDayTotals(currentNutritionLog);
+
+        // Compare with targets
+        const settings = await persistenceService.getById('settings', 'current') || {};
+        const workouts = await persistenceService.getAll('workoutLogs');
+        const workoutsOnDate = workouts.filter(w => w.date === currentNutritionLog.date && w.status === 'completed');
+
+        const isTrainDay = workoutsOnDate.length > 0;
+        const targets = settings.nutritionTargets ?
+            (isTrainDay ? settings.nutritionTargets.trainingDay : settings.nutritionTargets.restDay) : null;
+
+        const dateLabel = document.getElementById('nutrition-date-label');
+        dateLabel.innerText = `${currentNutritionLog.date} (${isTrainDay ? 'Training' : 'Rest'} Day)`;
+
+        totalCaloriesSpan.innerHTML = `<span>${Math.round(totals.calories)}</span>`;
+        totalProteinSpan.innerHTML = `<span>${Math.round(totals.protein)}</span>`;
+        totalCarbsSpan.innerHTML = `<span>${Math.round(totals.carbs)}</span>`;
+        totalFatsSpan.innerHTML = `<span>${Math.round(totals.fats)}</span>`;
+
+        if (targets) {
+            const getStatusColor = (total, target) => {
+                const status = nutritionService.evaluateMacroStatus(total, target);
+                if (status === 'green') return '#27ae60';
+                if (status === 'yellow' || status === 'orange') return '#f39c12';
+                return '#e74c3c';
+            };
+
+            const appendTarget = (span, total, target) => {
+                const statusColor = getStatusColor(total, target);
+                const isRange = target && typeof target === 'object' && target.min !== undefined;
+                const targetDisplay = isRange ? `${target.min}-${target.max}` : target;
+                const targetMax = isRange ? target.max : target;
+
+                const percent = targetMax > 0 ? (total / targetMax) * 100 : 0;
+
+                span.style.color = statusColor;
+                span.innerHTML += ` <small style="color: #666;">/ ${targetDisplay}</small>`;
+                span.innerHTML += `<div style="width: 100%; height: 4px; background: #eee; margin-top: 4px; border-radius: 2px;">
+                    <div style="width: ${Math.min(percent, 100)}%; height: 100%; background: ${statusColor}; border-radius: 2px;"></div>
+                </div>`;
+            };
+
+            appendTarget(totalCaloriesSpan, totals.calories, targets.calories);
+            appendTarget(totalProteinSpan, totals.protein, targets.protein);
+            appendTarget(totalCarbsSpan, totals.carbs, targets.carbs);
+            appendTarget(totalFatsSpan, totals.fats, targets.fats);
+        }
+    }
+
+    function renderMeals() {
+        mealsList.innerHTML = '';
+        currentNutritionLog.meals.forEach(meal => {
+            const totals = nutritionService.calculateMealTotals(meal);
+            const mealDiv = document.createElement('div');
+            mealDiv.className = 'meal-card';
+            mealDiv.innerHTML = `
+                <div class="meal-header">
+                    <h4>${meal.name}</h4>
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <small>${Math.round(totals.calories)} kcal | P: ${Math.round(totals.protein)}g</small>
+                        <button class="add-ing-to-meal-btn" data-meal-id="${meal.id}" style="font-size: 0.8em; padding: 2px 6px;">+ Add</button>
+                        <button class="edit-meal-btn" data-meal-id="${meal.id}" style="font-size: 0.8em; padding: 2px 6px;">Edit</button>
+                        <button class="remove-meal-btn" data-meal-id="${meal.id}" style="color:red; background:none; border:none; padding: 2px 6px;">✕</button>
+                    </div>
+                </div>
+                <div class="ingredients-list">
+                    ${meal.ingredients.map(ing => `
+                        <div class="ingredient-item">
+                            <span>${ing.name} (${ing.weight}g)</span>
+                            <span class="ingredient-macros">${Math.round(ing.calories)} cal | P: ${Math.round(ing.protein)}g</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            mealsList.appendChild(mealDiv);
+        });
+
+        // Add Meal Event Listeners
+        document.querySelectorAll('.add-ing-to-meal-btn').forEach(btn => {
+            btn.onclick = () => {
+                currentSelectedMealId = btn.dataset.mealId;
+                openIngredientModal();
+            };
+        });
+
+        document.querySelectorAll('.edit-meal-btn').forEach(btn => {
+            btn.onclick = () => {
+                const mealId = btn.dataset.mealId;
+                const meal = currentNutritionLog.meals.find(m => m.id === mealId);
+                if (meal) {
+                    currentEditingMealId = mealId;
+                    showMealEditor(meal);
+                }
+            };
+        });
+
+        document.querySelectorAll('.remove-meal-btn').forEach(btn => {
+            btn.onclick = async () => {
+                if (confirm('Remove this meal?')) {
+                    nutritionService.removeMeal(currentNutritionLog, btn.dataset.mealId);
+                    await nutritionService.saveLog(currentNutritionLog);
+                    renderMeals();
+                    updateNutritionSummary();
+                }
+            };
+        });
+    }
+
+    addMealBtn.onclick = async () => {
+        const mealName = prompt('Enter meal name (e.g., Breakfast, Lunch):');
+        if (mealName !== null && mealName.trim() !== '') {
+            nutritionService.addMeal(currentNutritionLog, mealName.trim());
+            await nutritionService.saveLog(currentNutritionLog);
+            renderMeals();
+            updateNutritionSummary();
+        }
+    };
+
+    // --- Meal History Logic ---
+    showMealHistoryBtn.onclick = () => {
+        mealHistoryModal.style.display = 'block';
+        mealSearchInput.value = '';
+        mealSearchResults.style.display = 'none';
+        mealSearchInput.focus();
+    };
+
+    closeMealHistoryModalBtn.onclick = () => {
+        mealHistoryModal.style.display = 'none';
+    };
+
+    mealSearchInput.oninput = async () => {
+        const query = mealSearchInput.value.trim();
+        if (query.length < 2) {
+            mealSearchResults.style.display = 'none';
+            return;
+        }
+
+        const results = await nutritionService.searchHistoricalMeals(query);
+        if (results.length > 0) {
+            mealSearchResults.innerHTML = results.map(meal => `
+                <div class="search-result-item" data-meal-name="${meal.name}" style="padding: 10px; border-bottom: 1px solid #eee; cursor: pointer;">
+                    <strong>${meal.name}</strong><br>
+                    <small>${meal.ingredients.length} ingredients</small>
+                </div>
+            `).join('');
+            mealSearchResults.style.display = 'block';
+
+            document.querySelectorAll('#meal-search-results .search-result-item').forEach(item => {
+                item.onclick = async () => {
+                    const mealName = item.dataset.mealName;
+                    const fullMeal = results.find(m => m.name === mealName);
+
+                    if (fullMeal) {
+                        // Clone the meal
+                        const newMeal = nutritionService.addMeal(currentNutritionLog, fullMeal.name);
+                        newMeal.ingredients = JSON.parse(JSON.stringify(fullMeal.ingredients)); // Deep copy
+
+                        await nutritionService.saveLog(currentNutritionLog);
+                        renderMeals();
+                        updateNutritionSummary();
+                        mealHistoryModal.style.display = 'none';
+                    }
+                };
+            });
+        } else {
+            mealSearchResults.innerHTML = '<div style="padding: 10px;">No meals found</div>';
+            mealSearchResults.style.display = 'block';
+        }
+    };
+
+    finishNutDayBtn.onclick = async () => {
+        currentNutritionLog.status = 'completed';
+        await nutritionService.saveLog(currentNutritionLog);
+
+        const totals = nutritionService.calculateDayTotals(currentNutritionLog);
+        const settings = await persistenceService.getById('settings', 'current') || {};
+        const workouts = await persistenceService.getAll('workoutLogs');
+        const workoutsOnDate = workouts.filter(w => w.date === currentNutritionLog.date && w.status === 'completed');
+
+        const isTrainDay = workoutsOnDate.length > 0;
+        const targets = settings.nutritionTargets ?
+            (isTrainDay ? settings.nutritionTargets.trainingDay : settings.nutritionTargets.restDay) : null;
+
+        let message = `Daily Summary for ${currentNutritionLog.date} (${isTrainDay ? 'Training' : 'Rest'} Day):\n\n`;
+        message += `Calories: ${Math.round(totals.calories)}${targets ? ' / ' + targets.calories : ''}\n`;
+        message += `Protein: ${Math.round(totals.protein)}g${targets ? ' / ' + targets.protein + 'g' : ''}\n`;
+        message += `Carbs: ${Math.round(totals.carbs)}g${targets ? ' / ' + targets.carbs + 'g' : ''}\n`;
+        message += `Fats: ${Math.round(totals.fats)}g${targets ? ' / ' + targets.fats + 'g' : ''}\n`;
+
+        if (targets) {
+            const calDiff = Math.round(totals.calories - targets.calories);
+            message += `\nStatus: ${calDiff > 0 ? '+' + calDiff : calDiff} kcal vs Target`;
+        }
+
+        alert(message);
+    };
+
+    function openIngredientModal() {
+        ingredientModal.style.display = 'block';
+        ingSearchInput.value = '';
+        ingNameInput.value = '';
+        ingWeightInput.value = '100';
+        ingCal100Input.value = '';
+        ingPro100Input.value = '';
+        ingCarb100Input.value = '';
+        ingFat100Input.value = '';
+        ingSearchResults.style.display = 'none';
+    }
+
+    ingSearchInput.oninput = async () => {
+        const query = ingSearchInput.value.trim();
+        if (query.length < 2) {
+            ingSearchResults.style.display = 'none';
+            return;
+        }
+        const results = await ingredientService.search(query);
+        if (results.length > 0) {
+            ingSearchResults.innerHTML = results.map(ing => `
+                <div class="ing-search-item" data-ing-id="${ing.id}">
+                    ${ing.name} (${ing.caloriesPer100g} cal/100g)
+                </div>
+            `).join('');
+            ingSearchResults.style.display = 'block';
+
+            document.querySelectorAll('.ing-search-item').forEach(item => {
+                item.onclick = async () => {
+                    const ing = await ingredientService.getById(item.dataset.ingId);
+                    if (ing) {
+                        ingNameInput.value = ing.name;
+                        ingCal100Input.value = ing.caloriesPer100g;
+                        ingPro100Input.value = ing.proteinPer100g;
+                        ingCarb100Input.value = ing.carbsPer100g;
+                        ingFat100Input.value = ing.fatsPer100g;
+                        ingSearchResults.style.display = 'none';
+                        ingSearchInput.value = ing.name;
+                    }
+                };
+            });
+        } else {
+            ingSearchResults.style.display = 'none';
+        }
+    };
+
+    saveIngredientBtn.onclick = async () => {
+        const name = ingNameInput.value.trim();
+        const weight = parseFloat(ingWeightInput.value);
+        const cal100 = parseFloat(ingCal100Input.value);
+        const pro100 = parseFloat(ingPro100Input.value);
+        const carb100 = parseFloat(ingCarb100Input.value);
+        const fat100 = parseFloat(ingFat100Input.value);
+
+        if (!name || isNaN(weight) || isNaN(cal100)) {
+            alert('Please fill in name, weight, and calories.');
+            return;
+        }
+
+        const ingredientData = {
+            id: name.toLowerCase().replace(/\s+/g, '_'),
+            name,
+            caloriesPer100g: cal100,
+            proteinPer100g: pro100 || 0,
+            carbsPer100g: carb100 || 0,
+            fatsPer100g: fat100 || 0
+        };
+
+        if (currentSelectedMealId === 'temporary') {
+            const macros = ingredientService.calculateMacros(ingredientData, weight);
+            temporaryEditingMeal.ingredients.push({
+                id: ingredientData.id,
+                name: ingredientData.name,
+                weight: weight,
+                ...macros
+            });
+            renderEditMealIngredients();
+        } else {
+            await nutritionService.addIngredientToMeal(currentNutritionLog, currentSelectedMealId, ingredientData, weight);
+            await nutritionService.saveLog(currentNutritionLog);
+        }
+
+        ingredientModal.style.display = 'none';
+        renderMeals();
+        updateNutritionSummary();
+    };
+
+    closeIngredientModalBtn.onclick = () => {
+        ingredientModal.style.display = 'none';
+    };
+
+    // --- Settings UI ---
+    const targetTrainCalMin = document.getElementById('target-train-cal-min');
+    const targetTrainCalMax = document.getElementById('target-train-cal-max');
+    const targetTrainCalCritMinus = document.getElementById('target-train-cal-crit-minus');
+    const targetTrainCalCritPlus = document.getElementById('target-train-cal-crit-plus');
+    const targetTrainProMin = document.getElementById('target-train-pro-min');
+    const targetTrainProMax = document.getElementById('target-train-pro-max');
+    const targetTrainProCritMinus = document.getElementById('target-train-pro-crit-minus');
+    const targetTrainProCritPlus = document.getElementById('target-train-pro-crit-plus');
+    const targetTrainCarbMin = document.getElementById('target-train-carb-min');
+    const targetTrainCarbMax = document.getElementById('target-train-carb-max');
+    const targetTrainCarbCritMinus = document.getElementById('target-train-carb-crit-minus');
+    const targetTrainCarbCritPlus = document.getElementById('target-train-carb-crit-plus');
+    const targetTrainFatMin = document.getElementById('target-train-fat-min');
+    const targetTrainFatMax = document.getElementById('target-train-fat-max');
+    const targetTrainFatCritMinus = document.getElementById('target-train-fat-crit-minus');
+    const targetTrainFatCritPlus = document.getElementById('target-train-fat-crit-plus');
+
+    const targetRestCalMin = document.getElementById('target-rest-cal-min');
+    const targetRestCalMax = document.getElementById('target-rest-cal-max');
+    const targetRestCalCritMinus = document.getElementById('target-rest-cal-crit-minus');
+    const targetRestCalCritPlus = document.getElementById('target-rest-cal-crit-plus');
+    const targetRestProMin = document.getElementById('target-rest-pro-min');
+    const targetRestProMax = document.getElementById('target-rest-pro-max');
+    const targetRestProCritMinus = document.getElementById('target-rest-pro-crit-minus');
+    const targetRestProCritPlus = document.getElementById('target-rest-pro-crit-plus');
+    const targetRestCarbMin = document.getElementById('target-rest-carb-min');
+    const targetRestCarbMax = document.getElementById('target-rest-carb-max');
+    const targetRestCarbCritMinus = document.getElementById('target-rest-carb-crit-minus');
+    const targetRestCarbCritPlus = document.getElementById('target-rest-carb-crit-plus');
+    const targetRestFatMin = document.getElementById('target-rest-fat-min');
+    const targetRestFatMax = document.getElementById('target-rest-fat-max');
+    const targetRestFatCritMinus = document.getElementById('target-rest-fat-crit-minus');
+    const targetRestFatCritPlus = document.getElementById('target-rest-fat-crit-plus');
+
+    const saveSettingsBtn = document.getElementById('save-settings-btn');
+
+    async function loadSettings() {
+        const settings = await persistenceService.getById('settings', 'current') || {};
+        const nt = settings.nutritionTargets || {};
+        const train = nt.trainingDay || {};
+        const rest = nt.restDay || {};
+
+        // Helper to fill range inputs
+        const fill = (macro, target) => {
+            const minEl = document.getElementById(`target-${macro}-min`);
+            const maxEl = document.getElementById(`target-${macro}-max`);
+            const critMinusEl = document.getElementById(`target-${macro}-crit-minus`);
+            const critPlusEl = document.getElementById(`target-${macro}-crit-plus`);
+
+            if (target && typeof target === 'object' && target.min !== undefined) {
+                if (minEl) minEl.value = target.min;
+                if (maxEl) maxEl.value = target.max;
+                if (critMinusEl) critMinusEl.value = target.critMinus !== undefined ? target.critMinus : (target.criticality || 0);
+                if (critPlusEl) critPlusEl.value = target.critPlus !== undefined ? target.critPlus : (target.criticality || 0);
+            } else if (target) {
+                // Backward compatibility for single values
+                if (minEl) minEl.value = target;
+                if (maxEl) maxEl.value = target;
+            }
+        };
+
+        fill('train-cal', train.calories);
+        fill('train-pro', train.protein);
+        fill('train-carb', train.carbs);
+        fill('train-fat', train.fats);
+
+        fill('rest-cal', rest.calories);
+        fill('rest-pro', rest.protein);
+        fill('rest-carb', rest.carbs);
+        fill('rest-fat', rest.fats);
+    }
+
+    saveSettingsBtn.onclick = async () => {
+        const settings = await persistenceService.getById('settings', 'current') || {};
+
+        const getRange = (prefix) => ({
+            min: parseFloat(document.getElementById(`${prefix}-min`).value) || 0,
+            max: parseFloat(document.getElementById(`${prefix}-max`).value) || 0,
+            critMinus: parseFloat(document.getElementById(`${prefix}-crit-minus`).value) || 0,
+            critPlus: parseFloat(document.getElementById(`${prefix}-crit-plus`).value) || 0
+        });
+
+        settings.nutritionTargets = {
+            trainingDay: {
+                calories: getRange('target-train-cal'),
+                protein: getRange('target-train-pro'),
+                carbs: getRange('target-train-carb'),
+                fats: getRange('target-train-fat')
+            },
+            restDay: {
+                calories: getRange('target-rest-cal'),
+                protein: getRange('target-rest-pro'),
+                carbs: getRange('target-rest-carb'),
+                fats: getRange('target-rest-fat')
+            }
+        };
+        await persistenceService.save('settings', settings, 'current');
+        alert('Settings saved!');
+    };
+
+    loadSettings();
 
     // --- UI Elements ---
     const appContainer = document.getElementById('app');
@@ -41,7 +691,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const importInput = document.getElementById('import-input');
 
     // Program Editor
-    const viewProgramBtn = document.getElementById('view-program-btn');
     const programEditor = document.getElementById('program-editor');
     const programDaysList = document.getElementById('program-days-list');
     const addDayBtn = document.getElementById('add-day-btn');
@@ -125,7 +774,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // History & Progression UI
-    const viewHistoryBtn = document.getElementById('view-history-btn');
     const historyScreen = document.getElementById('history-screen');
     const historyList = document.getElementById('history-list');
     const progressionScreen = document.getElementById('progression-screen');
@@ -254,14 +902,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // Program Editor Logic
-    viewProgramBtn.addEventListener('click', async () => {
-        const isHidden = programEditor.style.display === 'none';
-        programEditor.style.display = isHidden ? 'block' : 'none';
-        if (isHidden) {
-            await renderProgram();
-        }
-    });
-
     addDayBtn.addEventListener('click', async () => {
         const name = prompt('Enter day name:');
         if (name) {
@@ -729,27 +1369,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // --- History & Progression UI Logic ---
-
-    viewHistoryBtn.addEventListener('click', async () => {
-        const isHidden = historyScreen.style.display === 'none';
-        historyScreen.style.display = isHidden ? 'block' : 'none';
-        if (isHidden) {
-            await renderHistory();
-        } else {
-            // If hiding history, also hide details if they were open from history
-            if (isEditingHistory) {
-                activeWorkoutScreen.style.display = 'none';
-                historyViewLog = null;
-                isEditingHistory = false;
-                // If there was an active workout, show it again
-                if (currentActiveLog) {
-                    activeWorkoutScreen.style.display = 'block';
-                    renderActiveExercises(currentActiveLog);
-                }
-            }
-        }
-    });
-
     async function renderHistory() {
         const logs = await progressionService.getAllHistory();
         historyList.innerHTML = '';
