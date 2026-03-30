@@ -6,6 +6,8 @@ import { progressionService } from './services/ProgressionService.js';
 import { appInitializer } from './services/AppInitializer.js';
 import { nutritionService } from './services/NutritionService.js';
 import { ingredientService } from './services/IngredientService.js';
+import { authService } from './services/AuthService.js';
+import { syncService } from './services/SyncService.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('App: DOM Content Loaded');
@@ -19,6 +21,68 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.info('App: Initializing AppInitializer...');
         await appInitializer.init();
         console.info('App: AppInitializer completed.');
+
+        // Initialize Auth and Sync
+        await authService.init();
+        syncService.init();
+
+        // Handle Auth UI
+        const loginOverlay = document.getElementById('login-overlay');
+        const googleLoginBtn = document.getElementById('google-login-btn');
+        const skipLoginBtn = document.getElementById('skip-login-btn');
+        const userNameSpan = document.getElementById('user-name');
+        const loginBtn = document.getElementById('login-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+
+        // Check if user has skipped login before (session storage)
+        const hasSkipped = sessionStorage.getItem('login-skipped');
+
+        function updateAuthUI(user) {
+            if (user) {
+                loginOverlay.style.display = 'none';
+                userNameSpan.textContent = user.displayName || user.email;
+                loginBtn.style.display = 'none';
+                logoutBtn.style.display = 'block';
+            } else {
+                userNameSpan.textContent = '';
+                loginBtn.style.display = 'block';
+                logoutBtn.style.display = 'none';
+                if (!hasSkipped) {
+                    loginOverlay.style.display = 'flex';
+                }
+            }
+        }
+
+        window.addEventListener('auth-state-changed', (e) => {
+            updateAuthUI(e.detail.user);
+        });
+
+        googleLoginBtn.onclick = async () => {
+            try {
+                await authService.signInWithGoogle();
+            } catch (error) {
+                alert('Login failed: ' + error.message);
+            }
+        };
+
+        skipLoginBtn.onclick = () => {
+            loginOverlay.style.display = 'none';
+            sessionStorage.setItem('login-skipped', 'true');
+        };
+
+        loginBtn.onclick = () => {
+            loginOverlay.style.display = 'flex';
+        };
+
+        logoutBtn.onclick = async () => {
+            if (confirm('Are you sure you want to logout? Cloud sync will be disabled.')) {
+                await authService.logout();
+            }
+        };
+
+        // Initial UI state
+        updateAuthUI(authService.getCurrentUser());
+
     } catch (error) {
         console.error('App: Failed to initialize app', error);
         alert('Application initialization failed: ' + error.message);

@@ -77,10 +77,22 @@ class PersistenceService {
     }
 
     async save(storeName, data, key) {
+        // Ensure updatedAt is always set for sync
+        if (typeof data === 'object' && !Array.isArray(data) && data !== null) {
+            data.updatedAt = new Date().toISOString();
+        }
+
         const store = await this.getStore(storeName, 'readwrite');
         return new Promise((resolve, reject) => {
             const request = key ? store.put(data, key) : store.put(data);
-            request.onsuccess = () => resolve(request.result);
+            request.onsuccess = () => {
+                // Dispatch event for SyncService to pick up
+                const event = new CustomEvent('persistence-changed', {
+                    detail: { storeName, data, key: key || request.result }
+                });
+                window.dispatchEvent(event);
+                resolve(request.result);
+            };
             request.onerror = () => reject(request.error);
         });
     }
@@ -107,7 +119,14 @@ class PersistenceService {
         const store = await this.getStore(storeName, 'readwrite');
         return new Promise((resolve, reject) => {
             const request = store.delete(id);
-            request.onsuccess = () => resolve();
+            request.onsuccess = () => {
+                // Dispatch event for SyncService to pick up (tombstone)
+                const event = new CustomEvent('persistence-deleted', {
+                    detail: { storeName, id }
+                });
+                window.dispatchEvent(event);
+                resolve();
+            };
             request.onerror = () => reject(request.error);
         });
     }

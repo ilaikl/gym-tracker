@@ -181,3 +181,15 @@
 - **UI changes:** Add exercise name datalist to the exercise editor; integrate SortableJS for drag-and-drop reordering in Program and Active Workout views.
 - **Risks:** Unintended reordering of sets; data loss if reorder is not persisted correctly.
 - **Dependencies:** PLAN-003, PLAN-008.
+
+## PLAN-019: Cloud Synchronization and Authentication
+**Related Requirements:** R28, R29
+**Priority:** High
+**Description:** Implement user authentication via Firebase Auth (Google Provider) and a cloud-based backup/sync system using Firestore. This maintains the "local-first" approach while adding multi-device support.
+**Technical Scope:**
+- **Affected modules:** `AuthService`, `SyncService`, `PersistenceService`, `AppUI`
+- **Data model impact:** Associating all data with `uid`.
+- **Infrastructure changes:** Integration of Firebase SDK.
+- **API changes:** New authentication flow and background sync processes.
+- **Risks:** Synchronization conflicts (last-write-wins); ensuring offline capability remains seamless; managing data migration from local-only to cloud-synced accounts.
+- **Dependencies:** PLAN-001.

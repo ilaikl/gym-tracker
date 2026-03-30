@@ -244,3 +244,23 @@
   (PLAN-018 | R27 | LLD-018)
 - [x] Verify reordering persistence across sessions
   (PLAN-018 | R27 | LLD-018)
+
+## Phase 19 — Cloud Sync & Auth
+- [x] Create LLD-019 document for Cloud Sync and Auth
+  (PLAN-019 | R28, R29 | LLD-019)
+- [x] Install and initialize Firebase SDK
+  (PLAN-019 | R28, R29 | LLD-019)
+- [x] Implement `AuthService` (Google Sign-In/Out)
+  (PLAN-019 | R28 | LLD-019)
+- [x] Update `PersistenceService` with `updatedAt` metadata and sync event triggers
+  (PLAN-019 | R29 | LLD-019)
+- [x] Implement `SyncService` with push/pull/merge logic
+  (PLAN-019 | R29 | LLD-019)
+- [x] Add Authentication UI (Login modal and Sign-Out in settings)
+  (PLAN-019 | R28 | LLD-019)
+- [x] Implement initial data migration and background synchronization
+  (PLAN-019 | R29 | LLD-019)
+- [x] Verify multi-device synchronization and offline behavior
+  (PLAN-019 | R28, R29 | LLD-019)
+- [x] Secure Firebase credentials using `dotenv-webpack` and environment variables
+  (PLAN-019 | R28, R29 | LLD-019)

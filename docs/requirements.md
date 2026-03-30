@@ -337,16 +337,43 @@ As a user, I want to select from existing exercises when adding a new one to my 
 - **THEN** the system SHALL auto-fill its name, body part, and default targets.
 
 ### R27: Drag-and-Drop Reordering
-**User Story**
+User Story
 As a user, I want to reorder exercises within a workout by dragging them, so I can easily adjust my training flow in both the program and active sessions.
 
-**Acceptance Criteria**
+Acceptance Criteria
 - **WHEN** viewing a program day's exercises in the Program Editor.
 - **THEN** the system SHALL allow dragging and dropping exercises to change their order.
 - **WHEN** an active workout session is ongoing.
 - **THEN** the system SHALL allow dragging and dropping exercises to change their order in that specific session.
 - **WHEN** an exercise is reordered.
 - **THEN** the system SHALL immediately persist the new order to the respective `program` or `WorkoutLog`.
+
+### R28: User Authentication (Google Auth)
+User Story
+As a user, I want to sign in with my Google account so that my data is associated with my identity and can be synced across multiple devices.
+
+Acceptance Criteria
+- **WHEN** the user opens the app for the first time or is signed out.
+- **THEN** the system SHALL provide an option to "Sign in with Google".
+- **WHEN** the user signs in.
+- **THEN** the system SHALL authenticate the user via Firebase Auth.
+- **THEN** the system SHALL associate all subsequent data writes with the user's unique ID (UID).
+- **THEN** the system SHALL provide a "Sign Out" option in the Data Management section.
+
+### R29: Cloud Backup and Multi-Device Sync (Firestore)
+User Story
+As a user, I want my data to be automatically backed up to the cloud and synced across my devices so that I don't lose progress and can switch between phone and desktop seamlessly.
+
+Acceptance Criteria
+- **WHEN** the user is signed in and performs a data-changing action (e.g., logging a set, adding a meal).
+- **THEN** the system SHALL first persist the change to the local IndexedDB (Local-First).
+- **THEN** the system SHALL attempt to synchronize the change to Firestore in the background.
+- **WHEN** the app starts and the user is signed in.
+- **THEN** the system SHALL check for remote changes in Firestore and merge them into the local IndexedDB.
+- **WHEN** the user is offline.
+- **THEN** the system SHALL continue to function using local data.
+- **THEN** the system SHALL queue changes to be synced once an internet connection is restored.
+- **THEN** Firestore SHALL serve as the source of truth for all user data (program, workout logs, nutrition logs, settings).
 
 ## 3. Non-Functional Requirements
 
