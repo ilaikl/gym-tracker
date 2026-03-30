@@ -312,6 +312,20 @@ As a user, I want to edit an existing meal in my nutrition log so that I can cor
 - **THEN** the system SHALL automatically update the daily totals and targets for that nutrition log.
 - **THEN** the system SHALL persist the updated meal data to the `NutritionLog` in IndexedDB.
 
+### R25: History and Program Reset
+**User Story**
+As a user, I want to reset all my workout and nutrition history and restore the program to its default state so that I can start fresh.
+
+**Acceptance Criteria**
+- **WHEN** the user accesses the "Data Management" (Settings) section
+- **THEN** the system SHALL provide a "Reset All Data" button.
+- **WHEN** the user clicks "Reset All Data"
+- **THEN** the system SHALL ask for a final confirmation to prevent accidental data loss.
+- **WHEN** confirmed
+- **THEN** the system SHALL clear all `workoutLogs`, `nutritionLogs`, and the current `program` template.
+- **THEN** the system SHALL re-seed the default workout program and nutritional targets.
+- **THEN** the system SHALL refresh the UI to reflect the reset state.
+
 ## 3. Non-Functional Requirements
 
 ### Performance

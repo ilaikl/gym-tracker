@@ -169,3 +169,15 @@
 - **UI changes:** Add "Export" button to Nutrition History rows; add "Edit" button to meal items in Nutrition section; implement meal editor modal (reusing add meal logic).
 - **Risks:** Inconsistent daily totals if meal updates are not correctly propagated.
 - **Dependencies:** PLAN-011, PLAN-013.
+
+## PLAN-017: History and Program Reset
+**Related Requirements:** R25
+**Priority:** Medium
+**Description:** Implement a data reset feature that clears all workout and nutrition history and restores the application to its default state (original program and nutritional targets).
+**Technical Scope:**
+- **Affected modules:** `PersistenceService`, `AppInitializer`, `SettingsUI`
+- **Data model impact:** Full reset of major object stores.
+- **API changes:** N/A (Internal logic).
+- **UI changes:** Add a "Reset All Data" button with a double-confirmation prompt in the Data Management section.
+- **Risks:** Accidental data loss if the confirmation flow is too simple.
+- **Dependencies:** PLAN-001, PLAN-005.

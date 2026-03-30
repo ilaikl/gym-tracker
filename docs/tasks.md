@@ -218,3 +218,11 @@
 (PLAN-016 | R24 | LLD-016)
 - [x] Verify granular export and meal editing functionality
 (PLAN-016 | R23, R24 | LLD-016)
+
+## Phase 17 — Data Reset
+- [x] Implement reset logic in `app.js` (clearing stores and re-seeding)
+(PLAN-017 | R25 | LLD-017)
+- [x] Add "Reset All Data" button to `index.html` with confirmation logic
+(PLAN-017 | R25 | LLD-017)
+- [x] Verify history and program are reset correctly
+(PLAN-017 | R25 | LLD-017)

@@ -901,6 +901,38 @@ document.addEventListener('DOMContentLoaded', async () => {
         importInput.value = '';
     });
 
+    // Reset All Data Logic
+    const resetAllDataBtn = document.getElementById('reset-all-data-btn');
+    if (resetAllDataBtn) {
+        resetAllDataBtn.addEventListener('click', async () => {
+            if (!confirm('Are you sure you want to reset all workout and nutrition history? This will also revert your program to the default template. This action cannot be undone.')) {
+                return;
+            }
+
+            // Final confirmation for such a destructive action
+            if (!confirm('FINAL WARNING: This will permanently delete ALL your logs. Proceed?')) {
+                return;
+            }
+
+            try {
+                await persistenceService.clearStore('workoutLogs');
+                await persistenceService.clearStore('nutritionLogs');
+                await persistenceService.clearStore('program');
+                await persistenceService.clearStore('settings');
+                await persistenceService.clearStore('ingredients');
+
+                // Re-seed default program and settings
+                await appInitializer.init();
+
+                alert('Data reset successful. The app will now reload.');
+                window.location.reload();
+            } catch (error) {
+                console.error('Reset failed:', error);
+                alert('Failed to reset data: ' + error.message);
+            }
+        });
+    }
+
     // Program Editor Logic
     addDayBtn.addEventListener('click', async () => {
         const name = prompt('Enter day name:');
