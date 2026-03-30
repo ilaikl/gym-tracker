@@ -326,6 +326,28 @@ As a user, I want to reset all my workout and nutrition history and restore the 
 - **THEN** the system SHALL re-seed the default workout program and nutritional targets.
 - **THEN** the system SHALL refresh the UI to reflect the reset state.
 
+### R26: Exercise Selection from Existing Templates
+**User Story**
+As a user, I want to select from existing exercises when adding a new one to my program, so I can reuse details like name and body part without manual entry.
+
+**Acceptance Criteria**
+- **WHEN** adding a new exercise to a program day.
+- **THEN** the system SHALL provide a dropdown/search list of unique exercises already present in any day of the program.
+- **WHEN** an existing exercise is selected.
+- **THEN** the system SHALL auto-fill its name, body part, and default targets.
+
+### R27: Drag-and-Drop Reordering
+**User Story**
+As a user, I want to reorder exercises within a workout by dragging them, so I can easily adjust my training flow in both the program and active sessions.
+
+**Acceptance Criteria**
+- **WHEN** viewing a program day's exercises in the Program Editor.
+- **THEN** the system SHALL allow dragging and dropping exercises to change their order.
+- **WHEN** an active workout session is ongoing.
+- **THEN** the system SHALL allow dragging and dropping exercises to change their order in that specific session.
+- **WHEN** an exercise is reordered.
+- **THEN** the system SHALL immediately persist the new order to the respective `program` or `WorkoutLog`.
+
 ## 3. Non-Functional Requirements
 
 ### Performance

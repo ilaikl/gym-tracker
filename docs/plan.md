@@ -170,14 +170,14 @@
 - **Risks:** Inconsistent daily totals if meal updates are not correctly propagated.
 - **Dependencies:** PLAN-011, PLAN-013.
 
-## PLAN-017: History and Program Reset
-**Related Requirements:** R25
-**Priority:** Medium
-**Description:** Implement a data reset feature that clears all workout and nutrition history and restores the application to its default state (original program and nutritional targets).
+## PLAN-018: Exercise Selection and Reordering
+**Related Requirements:** R26, R27
+**Priority:** High
+**Description:** Enhance the program editor and active workout UI to support exercise selection from existing templates and drag-and-drop reordering of exercises.
 **Technical Scope:**
-- **Affected modules:** `PersistenceService`, `AppInitializer`, `SettingsUI`
-- **Data model impact:** Full reset of major object stores.
-- **API changes:** N/A (Internal logic).
-- **UI changes:** Add a "Reset All Data" button with a double-confirmation prompt in the Data Management section.
-- **Risks:** Accidental data loss if the confirmation flow is too simple.
-- **Dependencies:** PLAN-001, PLAN-005.
+- **Affected modules:** `TemplateService`, `WorkoutEngine`, `AppUI`
+- **Data model impact:** Maintain consistent `displayOrder` during drag-and-drop.
+- **API changes:** `WorkoutEngine.reorderExercises(logId, exerciseIds)`.
+- **UI changes:** Add exercise name datalist to the exercise editor; integrate SortableJS for drag-and-drop reordering in Program and Active Workout views.
+- **Risks:** Unintended reordering of sets; data loss if reorder is not persisted correctly.
+- **Dependencies:** PLAN-003, PLAN-008.

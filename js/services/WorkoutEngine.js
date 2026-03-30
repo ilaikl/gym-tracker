@@ -138,8 +138,33 @@ class WorkoutEngine {
         if (!log) throw new Error('Workout log not found');
 
         log.exercises = log.exercises.filter(e => e.id !== exerciseId);
+
+        // Reorder remaining exercises
+        log.exercises.forEach((ex, index) => {
+            ex.displayOrder = index + 1;
+        });
+
         log.updatedAt = new Date().toISOString();
 
+        await persistenceService.save('workoutLogs', log);
+        return log;
+    }
+
+    /**
+     * Reorders exercises in a workout log.
+     */
+    async reorderExercises(logId, exerciseIds) {
+        const log = await persistenceService.getById('workoutLogs', logId);
+        if (!log) throw new Error('Workout log not found');
+
+        const reordered = exerciseIds.map((id, index) => {
+            const ex = log.exercises.find(e => e.id === id);
+            if (ex) ex.displayOrder = index + 1;
+            return ex;
+        }).filter(Boolean);
+
+        log.exercises = reordered;
+        log.updatedAt = new Date().toISOString();
         await persistenceService.save('workoutLogs', log);
         return log;
     }

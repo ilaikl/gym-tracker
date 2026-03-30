@@ -223,6 +223,24 @@
 - [x] Implement reset logic in `app.js` (clearing stores and re-seeding)
 (PLAN-017 | R25 | LLD-017)
 - [x] Add "Reset All Data" button to `index.html` with confirmation logic
-(PLAN-017 | R25 | LLD-017)
+  (PLAN-017 | R25 | LLD-017)
 - [x] Verify history and program are reset correctly
-(PLAN-017 | R25 | LLD-017)
+  (PLAN-017 | R25 | LLD-017)
+
+## Phase 18 — Exercise Selection & Reordering
+- [x] Create LLD-018 document for exercise selection and reordering
+  (PLAN-018 | R26, R27 | LLD-018)
+- [x] Implement unique exercise datalist for program editor
+  (PLAN-018 | R26 | LLD-018)
+- [x] Implement auto-fill logic for existing exercise selection
+  (PLAN-018 | R26 | LLD-018)
+- [x] Add SortableJS to project
+  (PLAN-018 | R27 | LLD-018)
+- [x] Implement drag-and-drop reordering in Program Editor
+  (PLAN-018 | R27 | LLD-018)
+- [x] Implement `reorderExercises` in `WorkoutEngine`
+  (PLAN-018 | R27 | LLD-018)
+- [x] Implement drag-and-drop reordering in Active Workout
+  (PLAN-018 | R27 | LLD-018)
+- [x] Verify reordering persistence across sessions
+  (PLAN-018 | R27 | LLD-018)

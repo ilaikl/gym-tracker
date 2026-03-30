@@ -788,6 +788,41 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentEditingDayId = null;
     let currentEditingExId = null;
 
+    const existingExDatalist = document.getElementById('existing-exercises-list');
+    const uniqueExercisesMap = new Map();
+
+    async function populateExerciseDatalist() {
+        const program = await templateService.getProgram();
+        if (!program) return;
+        uniqueExercisesMap.clear();
+        existingExDatalist.innerHTML = '';
+        program.days.forEach(day => {
+            day.exercises.forEach(ex => {
+                if (!uniqueExercisesMap.has(ex.name)) {
+                    uniqueExercisesMap.set(ex.name, ex);
+                    const option = document.createElement('option');
+                    option.value = ex.name;
+                    existingExDatalist.appendChild(option);
+                }
+            });
+        });
+    }
+
+    exNameInput.addEventListener('input', () => {
+        const name = exNameInput.value.trim();
+        if (uniqueExercisesMap.has(name)) {
+            const ex = uniqueExercisesMap.get(name);
+            // Auto-fill if empty or confirmed
+            if (!exBodyPartInput.value.trim() || confirm(`Exercise "${name}" found in program. Copy details?`)) {
+                exBodyPartInput.value = ex.bodyPartPrimary;
+                exTargetWeightInput.value = ex.defaultWeight.value;
+                exTargetUnitInput.value = ex.defaultWeight.unit;
+                exTargetSetsInput.value = ex.targetSets.map(s => s.targetReps || s.maxReps || 0).join(', ');
+                exNotesInput.value = ex.notes || '';
+            }
+        }
+    });
+
     // Info Button logic
     const infoBtn = document.getElementById('info-btn');
     if (infoBtn) {
@@ -960,7 +995,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             dayEl.innerHTML = `
                 <h4>${day.name} (${day.type})</h4>
-                <div class="exercises-list"></div>
+                <div class="exercises-list" data-day-id="${day.id}"></div>
                 <div class="add-ex-section">
                     <button class="add-ex-btn" data-day-id="${day.id}">Add Exercise</button>
                     <div class="inline-add-editor-container" data-day-id="${day.id}" style="margin-top: 10px;"></div>
@@ -970,8 +1005,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             day.exercises.forEach(ex => {
             const dayElEx = document.createElement('div');
             dayElEx.className = 'exercise-item';
+            dayElEx.dataset.exId = ex.id;
             dayElEx.style.borderBottom = '1px solid #eee';
             dayElEx.style.padding = '5px 0';
+            dayElEx.style.cursor = 'grab';
 
             const repsString = ex.targetSets.map(s => s.targetReps || s.maxReps || 0).join(', ');
 
@@ -1030,10 +1067,24 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             });
         });
+
+        // Initialize Sortable for each day's exercise list
+        document.querySelectorAll('.exercises-list').forEach(listEl => {
+            new Sortable(listEl, {
+                animation: 150,
+                onEnd: async (evt) => {
+                    const dayId = evt.to.dataset.dayId;
+                    const exerciseIds = Array.from(evt.to.children).map(child => child.dataset.exId);
+                    await templateService.reorderExercises(dayId, exerciseIds);
+                    // No need to re-render, Sortable already moved the DOM element
+                }
+            });
+        });
     }
 
     async function showExerciseEditor(dayId, exId) {
         exerciseEditor.style.display = 'block';
+        await populateExerciseDatalist();
         if (exId) {
             const program = await templateService.getProgram();
             const day = program.days.find(d => d.id === dayId);
@@ -1150,10 +1201,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         log.exercises.forEach(ex => {
             const exEl = document.createElement('div');
             exEl.className = 'logged-exercise-card';
+            exEl.dataset.exId = ex.id;
             exEl.style.border = '1px solid #aaa';
             exEl.style.margin = '10px 0';
             exEl.style.padding = '10px';
             exEl.style.position = 'relative';
+            exEl.style.cursor = 'grab';
 
             exEl.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: flex-start;">
@@ -1272,6 +1325,19 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
                 }
             }));
+        });
+
+        // Initialize Sortable for active workout
+        new Sortable(activeExercisesList, {
+            animation: 150,
+            onEnd: async (evt) => {
+                const exerciseIds = Array.from(activeExercisesList.children).map(child => child.dataset.exId);
+                const log = isEditingHistory ? historyViewLog : currentActiveLog;
+                if (!log) return;
+                const updatedLog = await workoutEngine.reorderExercises(log.id, exerciseIds);
+                if (isEditingHistory) historyViewLog = updatedLog;
+                else currentActiveLog = updatedLog;
+            }
         });
     }
 

@@ -20,6 +20,7 @@
 
   <link rel="manifest" href="site.webmanifest">
   <meta name="theme-color" content="#fafafa">
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 </head>
 
 <body>
@@ -101,7 +102,8 @@
              <h4 id="ex-editor-title">Add/Edit Exercise</h4>
              <div style="margin-bottom: 10px;">
                <label>Name:</label><br>
-               <input type="text" id="ex-name" placeholder="Exercise Name" style="width: 100%;">
+               <input type="text" id="ex-name" placeholder="Exercise Name" style="width: 100%;" list="existing-exercises-list">
+               <datalist id="existing-exercises-list"></datalist>
              </div>
              <div style="margin-bottom: 10px;">
                <label>Body Part:</label><br>
