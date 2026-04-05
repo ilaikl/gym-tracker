@@ -271,7 +271,11 @@
 - [x] Integrate timer to auto-start on set completion during active workout (PLAN-021 | R32 | LLD-023)
 - [x] Fix: Ensure timer visibility and z-index are prioritized (PLAN-021 | R32 | LLD-023)
 - [x] Fix: Add persistent "Timer" button to active workout screen for manual toggle (PLAN-021 | R32 | LLD-023)
-- [ ] FIX: FIX TIMER
+- [x] FIX: FIX TIMER
+- [x] Improve Rest Timer: Open by default and move toggle button to header (PLAN-021 | R32 | LLD-023)
+- [x] Fix: Rest Timer logic stuck at 00:00 and make workout header sticky (PLAN-021 | R32 | LLD-023)
+- [x] Fix: Ensure Rest Timer starts automatically and consistently (PLAN-021 | R32 | LLD-023)
+- [x] Fix: Resolve scrolling issue in Active Workout screen by using flexbox layout and fixed footer (PLAN-021 | R32 | LLD-023)
 
 ## Phase 24 — Database Integration
 - [x] Create `ExternalApiService.js` for USDA API calls (PLAN-024 | R35 | LLD-024)
@@ -286,3 +290,11 @@
 - [x] Add inline "Back" button to Active Workout header (PLAN-025 | R34 | LLD-025)
 - [x] Implement navigation logic to return to home/main (PLAN-025 | R34 | LLD-025)
 - [x] Apply CSS for inline flex position with workout name (PLAN-025 | R34 | LLD-025)
+
+
+## Phase 26 — UI Auto-Management
+- [x] Implement scroll-to-bottom auto-expansion for Active Workout bars (PLAN-026 | R36 | LLD-026)
+- [x] Synchronize toggle button state with scroll-triggered expansion (PLAN-026 | R36 | LLD-026)
+- [x] Implement scroll-down auto-minimization for Active Workout bars (PLAN-026 | R37 | LLD-026)
+- [x] Implement scroll-to-top auto-expansion for Active Workout bars (PLAN-026 | R37 | LLD-026)
+- [x] Fix vibration issue and add smooth "popping" animations for UI bars (PLAN-026 | R38 | LLD-026)

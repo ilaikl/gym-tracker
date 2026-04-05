@@ -75,17 +75,31 @@
         </div>
 
         <div id="active-workout-screen" style="display: none;">
-          <div id="workout-header" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
-            <button id="workout-back-btn" style="display: none;">Back</button>
-            <h3 id="active-day-name" style="margin: 0;">Active Workout</h3>
+          <div id="active-workout-screen-inner">
+            <div id="workout-header" style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <button id="workout-back-btn" style="display: none;">Back</button>
+                <h3 id="active-day-name" style="margin: 0;">Active Workout</h3>
+              </div>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <button id="toggle-rest-timer-btn" style="background-color: #666; width: auto; padding: 6px 12px; margin: 0;">Timer</button>
+                <button id="toggle-bars-btn" style="background-color: #444; width: auto; padding: 6px 12px; margin: 0;">☰</button>
+              </div>
+            </div>
+            <div id="active-exercises-list"></div>
+            <div id="active-workout-footer">
+              <div id="add-exercise-actions" style="margin: 10px 0; display: flex; gap: 10px;">
+                <button id="show-add-ex-modal-btn" style="flex: 1;">+ Add Exercise</button>
+              </div>
+              <button id="complete-workout-btn">Complete Workout</button>
+              <button id="cancel-active-workout-btn" style="color: red;">Exit</button>
+            </div>
           </div>
-          <div id="active-exercises-list"></div>
-          <div id="add-exercise-actions" style="margin: 10px 0; display: flex; gap: 10px;">
-            <button id="show-add-ex-modal-btn" style="flex: 1;">+ Add Exercise</button>
-            <button id="toggle-rest-timer-btn" style="flex: 1; background-color: #666;">Timer</button>
-          </div>
-          <button id="complete-workout-btn">Complete Workout</button>
-          <button id="cancel-active-workout-btn" style="color: red;">Exit</button>
+        </div>
+
+        <div id="workout-section-history" style="margin-top: 30px; border-top: 2px solid #eee; padding-top: 20px;">
+            <h3>Quick History</h3>
+            <div id="workout-section-history-list"></div>
         </div>
 
         <!-- Add Exercise Modal (unchanged but wrapped) -->

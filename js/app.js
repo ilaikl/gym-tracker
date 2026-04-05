@@ -113,14 +113,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     function switchSection(targetId) {
         sections.forEach(sec => sec.style.display = 'none');
         const targetSection = document.getElementById(targetId);
-        if (targetSection) targetSection.style.display = 'block';
+        if (targetSection) {
+            targetSection.style.display = targetId === 'workout-section' && activeWorkoutScreen.style.display === 'flex' ? 'flex' : 'block';
+        }
 
-        // Hide special overlays if not in active workout
+        // Hide special overlays if not in workout-section
         if (targetId !== 'workout-section') {
+            console.log('App: Leaving workout section, hiding and stopping timer');
             activeWorkoutScreen.style.display = 'none';
             workoutBackBtn.style.display = 'none';
             restTimerOverlay.style.display = 'none';
             stopTimer();
+        } else {
+            console.log('App: Staying in or entering workout section');
+            if (activeWorkoutScreen.style.display === 'none') {
+                // If the active workout screen is hidden, ensure main workout section parts are visible
+                startWorkoutBtn.style.display = 'block';
+                checkForDraft();
+            }
         }
 
         navButtons.forEach(b => {
@@ -846,26 +856,36 @@ document.addEventListener('DOMContentLoaded', async () => {
     let isTimerPaused = false;
 
     function startTimer() {
-        if (timerInterval) clearInterval(timerInterval);
-        console.log('App: Starting timer');
+        if (timerInterval) {
+            console.log('Timer: Interval already exists, clearing it before restart');
+            clearInterval(timerInterval);
+        }
+        console.log('Timer: Starting');
         restTimerOverlay.style.display = 'flex';
         restTimerOverlay.style.zIndex = '10000'; // Force extremely high z-index
         isTimerPaused = false;
         timerPauseBtn.textContent = 'Pause';
 
+        // Use a self-referencing interval to ensure it's not cleared by mistake elsewhere
         timerInterval = setInterval(() => {
             if (!isTimerPaused) {
                 timerSeconds++;
+                console.log('Timer: Tick', timerSeconds);
                 updateTimerDisplay();
+            } else {
+                console.log('Timer: Paused, no tick');
             }
         }, 1000);
+        console.log('Timer: Interval started with ID', timerInterval);
     }
 
     function stopTimer() {
+        console.log('Timer: Stopping and clearing interval ID', timerInterval);
         if (timerInterval) clearInterval(timerInterval);
         timerInterval = null;
         timerSeconds = 0;
         updateTimerDisplay();
+        console.log('Timer: Stopped');
     }
 
     function pauseTimer() {
@@ -892,7 +912,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     timerResetBtn.onclick = resetTimer;
     hideTimerBtn.onclick = () => {
         restTimerOverlay.style.display = 'none';
-        stopTimer();
+        // stopTimer(); // User wanted "unhide" option, let it keep running
     };
     const completeWorkoutBtn = document.getElementById('complete-workout-btn');
 
@@ -967,6 +987,69 @@ document.addEventListener('DOMContentLoaded', async () => {
     const backToHistoryBtn = document.getElementById('back-to-history-btn');
     const cancelActiveWorkoutBtn = document.getElementById('cancel-active-workout-btn');
     const workoutBackBtn = document.getElementById('workout-back-btn');
+    const toggleBarsBtn = document.getElementById('toggle-bars-btn');
+    let lastAutoToggleTime = 0; // Move out of scope to be shared
+
+    if (toggleBarsBtn) {
+        toggleBarsBtn.onclick = () => {
+            const header = document.getElementById('workout-header');
+            const footer = document.getElementById('active-workout-footer');
+            if (header.classList.contains('minimized')) {
+                header.classList.remove('minimized');
+                footer.classList.remove('minimized');
+                toggleBarsBtn.textContent = '☰';
+            } else {
+                header.classList.add('minimized');
+                footer.classList.add('minimized');
+                toggleBarsBtn.textContent = '⛶'; // Fullscreen symbol
+            }
+            lastAutoToggleTime = Date.now(); // Update cooldown on manual toggle too
+        };
+    }
+
+    if (activeExercisesList) {
+        let lastScrollTop = 0;
+        const TOGGLE_COOLDOWN = 300; // ms
+
+        activeExercisesList.onscroll = () => {
+            const now = Date.now();
+            const header = document.getElementById('workout-header');
+            const footer = document.getElementById('active-workout-footer');
+            if (!header || !footer) return;
+
+            const currentScrollTop = activeExercisesList.scrollTop;
+            const scrollHeight = activeExercisesList.scrollHeight;
+            const clientHeight = activeExercisesList.clientHeight;
+
+            // If scrolled to bottom (threshold 40px), automatically expand bars
+            const isAtBottom = (scrollHeight - currentScrollTop - clientHeight) < 40;
+            // If scrolled to top (threshold 40px), automatically expand bars
+            const isAtTop = currentScrollTop < 40;
+
+            if (now - lastAutoToggleTime > TOGGLE_COOLDOWN) {
+                if (isAtBottom || isAtTop) {
+                    if (header.classList.contains('minimized')) {
+                        header.classList.remove('minimized');
+                        footer.classList.remove('minimized');
+                        if (toggleBarsBtn) toggleBarsBtn.textContent = '☰';
+                        console.log(`UI: Auto-expanding bars at ${isAtBottom ? 'bottom' : 'top'} of scroll`);
+                        lastAutoToggleTime = now;
+                    }
+                } else if (currentScrollTop > lastScrollTop && currentScrollTop > 100) {
+                    // If scrolling down significantly, minimize bars
+                    if (!header.classList.contains('minimized')) {
+                        header.classList.add('minimized');
+                        footer.classList.add('minimized');
+                        if (toggleBarsBtn) toggleBarsBtn.textContent = '⛶';
+                        console.log('UI: Auto-minimizing bars when scrolling down');
+                        lastAutoToggleTime = now;
+                    }
+                }
+            }
+
+            lastScrollTop = currentScrollTop;
+        };
+    }
 
     let currentActiveLog = null;
     let historyViewLog = null;
@@ -1013,12 +1096,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     const toggleRestTimerBtn = document.getElementById('toggle-rest-timer-btn');
     if (toggleRestTimerBtn) {
         toggleRestTimerBtn.onclick = () => {
+            console.log('Timer: Toggle button clicked. Current display:', restTimerOverlay.style.display);
             if (restTimerOverlay.style.display === 'flex') {
                 restTimerOverlay.style.display = 'none';
-                stopTimer();
+                console.log('Timer: Hiding overlay');
             } else {
                 restTimerOverlay.style.display = 'flex';
                 restTimerOverlay.style.zIndex = '10000';
+                console.log('Timer: Showing overlay');
+                if (!timerInterval) {
+                    console.log('Timer: Starting timer from toggle button');
+                    startTimer();
+                }
                 updateTimerDisplay();
             }
         };
@@ -1037,6 +1126,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function checkForDraft() {
         const logs = await workoutEngine.getAllLogs();
         const draft = logs.find(log => log.status === 'draft');
+        const sectionHistory = document.getElementById('workout-section-history');
+        const sectionHistoryList = document.getElementById('workout-section-history-list');
+
         if (draft) {
             resumeContainer.innerHTML = `
                 <span>You have an unfinished workout from ${draft.date}.</span>
@@ -1050,16 +1142,47 @@ document.addEventListener('DOMContentLoaded', async () => {
                 showActiveWorkout(draft);
                 resumeContainer.style.display = 'none';
                 startWorkoutBtn.style.display = 'none';
+                if (sectionHistory) sectionHistory.style.display = 'none';
             };
 
             document.getElementById('discard-btn').onclick = async () => {
                 if (confirm('Are you sure you want to discard this draft?')) {
                     await workoutEngine.deleteWorkoutLog(draft.id);
                     resumeContainer.style.display = 'none';
+                    await checkForDraft(); // Refresh history too
                 }
             };
         } else {
             resumeContainer.style.display = 'none';
+        }
+
+        // Also render quick history in workout section
+        if (sectionHistory && sectionHistoryList) {
+            sectionHistory.style.display = 'block';
+            const completedLogs = logs.filter(l => l.status === 'completed').slice(-5).reverse();
+            sectionHistoryList.innerHTML = '';
+            if (completedLogs.length === 0) {
+                sectionHistoryList.innerHTML = '<p>No recent history.</p>';
+            } else {
+                completedLogs.forEach(log => {
+                    const item = document.createElement('div');
+                    item.style.padding = '8px';
+                    item.style.borderBottom = '1px solid #eee';
+                    item.style.display = 'flex';
+                    item.style.justifyContent = 'space-between';
+                    item.innerHTML = `<span>${log.date} - ${log.dayName}</span><button class="view-log-btn" data-log-id="${log.id}" style="width:auto; padding: 4px 8px; font-size: 0.8em;">View</button>`;
+                    sectionHistoryList.appendChild(item);
+                });
+                sectionHistoryList.querySelectorAll('.view-log-btn').forEach(btn => {
+                    btn.onclick = async (e) => {
+                        const logId = e.target.dataset.logId;
+                        const log = await workoutEngine.getLogById(logId);
+                        historyViewLog = log;
+                        isEditingHistory = true;
+                        showActiveWorkout(log);
+                    };
+                });
+            }
         }
     }
 
@@ -1426,12 +1549,32 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function showActiveWorkout(log) {
+        console.log('App: Showing active workout');
+        activeWorkoutScreen.style.display = 'flex'; // Set display to flex
         switchSection('workout-section'); // Ensure we are in workout section
         startWorkoutScreen.style.display = 'none';
         historyScreen.style.display = 'none';
-        activeWorkoutScreen.style.display = 'block';
         workoutBackBtn.style.display = 'block';
         activeDayName.innerText = `${log.dayName} - ${log.date}`;
+
+        // Ensure resume and menu parts of workout section are hidden while active
+        startWorkoutBtn.style.display = 'none';
+        resumeContainer.style.display = 'none';
+        const sectionHistory = document.getElementById('workout-section-history');
+        if (sectionHistory) sectionHistory.style.display = 'none';
+
+        // Ensure Rest Timer overlay is visible by default when entering active workout
+        console.log('App: Auto-showing Rest Timer');
+        restTimerOverlay.style.display = 'flex';
+        restTimerOverlay.style.zIndex = '10000';
+        updateTimerDisplay();
+
+        // Start timer automatically if not already running when entering workout
+        if (!timerInterval) {
+            console.log('App: Auto-starting Rest Timer on enter');
+            startTimer();
+        }
+
         renderActiveExercises(log);
     }
 
@@ -1685,8 +1828,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!isEditingHistory) {
                 alert('Workout completed and saved!');
             }
+            console.log('App: Completing workout');
             activeWorkoutScreen.style.display = 'none';
             workoutBackBtn.style.display = 'none'; // Ensure back button is hidden
+            restTimerOverlay.style.display = 'none';
+            stopTimer();
             if (isEditingHistory) {
                 historyScreen.style.display = 'block';
                 historyViewLog = null;
@@ -1702,8 +1848,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     }));
 
     cancelActiveWorkoutBtn.addEventListener('click', () => {
+        console.log('App: Exiting active workout via Cancel');
         activeWorkoutScreen.style.display = 'none';
         workoutBackBtn.style.display = 'none';
+        restTimerOverlay.style.display = 'none';
+        stopTimer();
         if (isEditingHistory) {
             historyScreen.style.display = 'block';
             historyViewLog = null;
@@ -1731,8 +1880,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             switchSection('history-section');
             renderHistory();
         } else {
-            // Otherwise it acts like cancel/exit
-            cancelActiveWorkoutBtn.click();
+            // "Back" should now hide the active workout screen and return to workout section
+            console.log('App: Hiding active workout screen to return to menu');
+            activeWorkoutScreen.style.display = 'none';
+            workoutBackBtn.style.display = 'none';
+            // We stay in workout-section, but now active screen is hidden, so we show the menu
+            startWorkoutBtn.style.display = 'block';
+            checkForDraft();
         }
     });
 
