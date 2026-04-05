@@ -23,12 +23,13 @@ class ProgressionService {
         for (const log of logs) {
             const exercises = log.exercises.filter(ex => ex.templateExerciseId === templateExerciseId);
             for (const exercise of exercises) {
-                if (exercise.actualSets && exercise.actualSets.length > 0) {
+                const performedSets = exercise.actualSets.filter(s => s.actualReps !== null && s.actualReps !== undefined);
+                if (performedSets.length > 0) {
                     history.push({
                         date: log.date,
                         logId: log.id,
                         name: exercise.name,
-                        actualSets: exercise.actualSets,
+                        actualSets: performedSets,
                         status: log.status
                     });
                 }

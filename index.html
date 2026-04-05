@@ -25,6 +25,15 @@
 
 <body>
 
+  <div id="rest-timer-overlay">
+    <button id="hide-timer-btn">×</button>
+    <div id="timer-display">00:00</div>
+    <div class="timer-controls">
+      <button id="timer-pause-btn">Pause</button>
+      <button id="timer-reset-btn">Reset</button>
+    </div>
+  </div>
+
   <div id="app">
     <h1>Workout Tracker</h1>
 
@@ -66,10 +75,14 @@
         </div>
 
         <div id="active-workout-screen" style="display: none;">
-          <h3 id="active-day-name">Active Workout</h3>
+          <div id="workout-header" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+            <button id="workout-back-btn" style="display: none;">Back</button>
+            <h3 id="active-day-name" style="margin: 0;">Active Workout</h3>
+          </div>
           <div id="active-exercises-list"></div>
-          <div id="add-exercise-actions" style="margin: 10px 0;">
-            <button id="show-add-ex-modal-btn">Add Exercise</button>
+          <div id="add-exercise-actions" style="margin: 10px 0; display: flex; gap: 10px;">
+            <button id="show-add-ex-modal-btn" style="flex: 1;">+ Add Exercise</button>
+            <button id="toggle-rest-timer-btn" style="flex: 1; background-color: #666;">Timer</button>
           </div>
           <button id="complete-workout-btn">Complete Workout</button>
           <button id="cancel-active-workout-btn" style="color: red;">Exit</button>
@@ -91,7 +104,8 @@
             </div>
 
             <div id="manual-ex-container" style="display: none; margin-top: 15px;">
-              <input type="text" id="manual-ex-name" placeholder="Exercise Name" style="width: 100%; margin-bottom: 5px;"><br>
+              <input type="text" id="manual-ex-name" placeholder="Exercise Name" style="width: 100%; margin-bottom: 5px;" list="manual-exercises-list"><br>
+              <datalist id="manual-exercises-list"></datalist>
               <input type="text" id="manual-ex-bodypart" placeholder="Body Part" style="width: 100%; margin-bottom: 5px;"><br>
               <label>Sets:</label> <input type="number" id="manual-ex-sets" value="3" style="width: 50px; margin-bottom: 5px;"><br>
               <label>Target Reps:</label> <input type="number" id="manual-ex-reps" value="10" style="width: 50px; margin-bottom: 5px;"><br>
@@ -207,9 +221,11 @@
         <div class="modal-content" style="background: white; margin: 50px auto; padding: 20px; width: 90%; max-width: 400px; border-radius: 8px;">
           <h3 id="ingredient-modal-title">Add Ingredient</h3>
           <div style="margin-bottom: 10px;">
-            <label>Search Ingredient:</label><br>
-            <input type="text" id="ing-search-input" placeholder="Start typing..." style="width: 100%;">
-            <div id="ing-search-results" style="border: 1px solid #ddd; max-height: 150px; overflow-y: auto; display: none;"></div>
+            <div style="display: flex; gap: 5px; margin-bottom: 5px; align-items: center;">
+              <input type="text" id="ing-search-input" placeholder="Search Local..." style="flex: 1; margin-bottom: 0;">
+              <button id="ing-search-online-btn" style="width: auto; padding: 4px 12px; font-size: 0.8em; white-space: nowrap; margin: 0;">Search Online</button>
+            </div>
+            <div id="ing-search-results" style="border: 1px solid #ddd; max-height: 150px; overflow-y: auto; display: none; background: white;"></div>
           </div>
           <hr>
           <div id="ing-details-form">

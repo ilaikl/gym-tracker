@@ -1,0 +1,42 @@
+[
+  {
+    "name": "Barbell Squat",
+    "bodyPart": "Legs",
+    "cues": "Keep chest up, hips back, break parallel."
+  },
+  {
+    "name": "Bench Press",
+    "bodyPart": "Chest",
+    "cues": "Retract scapula, touch mid-chest, drive with legs."
+  },
+  {
+    "name": "Deadlift",
+    "bodyPart": "Back",
+    "cues": "Flat back, bar close to shins, drive through heels."
+  },
+  {
+    "name": "Overhead Press",
+    "bodyPart": "Shoulders",
+    "cues": "Tight core, press overhead, head through the window."
+  },
+  {
+    "name": "Pull Up",
+    "bodyPart": "Back",
+    "cues": "Full extension, chin over bar, controlled descent."
+  },
+  {
+    "name": "Bicep Curl",
+    "bodyPart": "Arms",
+    "cues": "Keep elbows tucked, full range of motion."
+  },
+  {
+    "name": "Tricep Pushdown",
+    "bodyPart": "Arms",
+    "cues": "Keep elbows still, squeeze at the bottom."
+  },
+  {
+    "name": "Lateral Raise",
+    "bodyPart": "Shoulders",
+    "cues": "Slight bend in elbows, lead with pinkies."
+  }
+]

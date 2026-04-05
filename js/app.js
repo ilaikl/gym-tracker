@@ -6,6 +6,7 @@ import { progressionService } from './services/ProgressionService.js';
 import { appInitializer } from './services/AppInitializer.js';
 import { nutritionService } from './services/NutritionService.js';
 import { ingredientService } from './services/IngredientService.js';
+import { externalApiService } from './services/ExternalApiService.js';
 import { authService } from './services/AuthService.js';
 import { syncService } from './services/SyncService.js';
 
@@ -22,9 +23,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         await appInitializer.init();
         console.info('App: AppInitializer completed.');
 
+        // Load common exercises
+        let commonExercises = [];
+        try {
+            const exDatalist = document.getElementById('existing-exercises-list');
+            const manualExDatalist = document.getElementById('manual-exercises-list');
+            const response = await fetch('./data/exercises.json');
+            commonExercises = await response.json();
+            const options = commonExercises.map(ex => `<option value="${ex.name}">`).join('');
+            if (exDatalist) exDatalist.innerHTML = options;
+            if (manualExDatalist) manualExDatalist.innerHTML = options;
+        } catch (error) {
+            console.error('Error loading common exercises:', error);
+        }
+
         // Initialize Auth and Sync
         await authService.init();
         syncService.init();
+
+        // Ensure commonExercises is accessible globally in the scope
+        window.commonExercisesList = commonExercises;
 
         // Handle Auth UI
         const loginOverlay = document.getElementById('login-overlay');
@@ -97,6 +115,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         const targetSection = document.getElementById(targetId);
         if (targetSection) targetSection.style.display = 'block';
 
+        // Hide special overlays if not in active workout
+        if (targetId !== 'workout-section') {
+            activeWorkoutScreen.style.display = 'none';
+            workoutBackBtn.style.display = 'none';
+            restTimerOverlay.style.display = 'none';
+            stopTimer();
+        }
+
         navButtons.forEach(b => {
             const btnSectionId = b.id.replace('nav-', '').replace('-btn', '') + '-section';
             if (btnSectionId === targetId) {
@@ -130,6 +156,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const finishNutDayBtn = document.getElementById('finish-nut-day-btn');
     const ingredientModal = document.getElementById('ingredient-modal');
     const ingSearchInput = document.getElementById('ing-search-input');
+    const ingSearchOnlineBtn = document.getElementById('ing-search-online-btn');
     const ingSearchResults = document.getElementById('ing-search-results');
     const ingNameInput = document.getElementById('ing-name');
     const ingWeightInput = document.getElementById('ing-weight');
@@ -561,32 +588,57 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
         const results = await ingredientService.search(query);
+        renderIngredientSearchResults(results);
+    };
+
+    ingSearchOnlineBtn.onclick = async () => {
+        const query = ingSearchInput.value.trim();
+        if (!query) return alert('Enter a search term');
+
+        ingSearchOnlineBtn.disabled = true;
+        ingSearchOnlineBtn.innerText = 'Searching...';
+
+        try {
+            const results = await externalApiService.searchFood(query);
+            renderIngredientSearchResults(results);
+        } catch (e) {
+            alert('Error searching online');
+        } finally {
+            ingSearchOnlineBtn.disabled = false;
+            ingSearchOnlineBtn.innerText = 'Search Online';
+        }
+    };
+
+    function renderIngredientSearchResults(results) {
         if (results.length > 0) {
             ingSearchResults.innerHTML = results.map(ing => `
-                <div class="ing-search-item" data-ing-id="${ing.id}">
-                    ${ing.name} (${ing.caloriesPer100g} cal/100g)
+                <div class="ing-search-item"
+                     data-name="${ing.name.replace(/"/g, '&quot;')}"
+                     data-cal="${ing.caloriesPer100g}"
+                     data-pro="${ing.proteinPer100g}"
+                     data-carb="${ing.carbsPer100g}"
+                     data-fat="${ing.fatsPer100g}">
+                    ${ing.name} ${ing.brand ? `(${ing.brand})` : ''} - ${ing.caloriesPer100g} cal/100g
                 </div>
             `).join('');
             ingSearchResults.style.display = 'block';
 
             document.querySelectorAll('.ing-search-item').forEach(item => {
-                item.onclick = async () => {
-                    const ing = await ingredientService.getById(item.dataset.ingId);
-                    if (ing) {
-                        ingNameInput.value = ing.name;
-                        ingCal100Input.value = ing.caloriesPer100g;
-                        ingPro100Input.value = ing.proteinPer100g;
-                        ingCarb100Input.value = ing.carbsPer100g;
-                        ingFat100Input.value = ing.fatsPer100g;
-                        ingSearchResults.style.display = 'none';
-                        ingSearchInput.value = ing.name;
-                    }
+                item.onclick = () => {
+                    ingNameInput.value = item.dataset.name;
+                    ingCal100Input.value = item.dataset.cal;
+                    ingPro100Input.value = item.dataset.pro;
+                    ingCarb100Input.value = item.dataset.carb;
+                    ingFat100Input.value = item.dataset.fat;
+                    ingSearchResults.style.display = 'none';
+                    ingSearchInput.value = item.dataset.name;
                 };
             });
         } else {
-            ingSearchResults.style.display = 'none';
+            ingSearchResults.innerHTML = '<div style="padding: 10px; font-size: 0.85em; color: #666;">No results found.</div>';
+            ingSearchResults.style.display = 'block';
         }
-    };
+    }
 
     saveIngredientBtn.onclick = async () => {
         const name = ingNameInput.value.trim();
@@ -762,6 +814,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Exercise Editor
     const exerciseEditor = document.getElementById('exercise-editor');
     const exNameInput = document.getElementById('ex-name');
+    const exDatalist = document.getElementById('existing-exercises-list');
+    const manualExDatalist = document.getElementById('manual-exercises-list');
     const exBodyPartInput = document.getElementById('ex-bodypart');
     const exTargetWeightInput = document.getElementById('ex-target-weight');
     const exTargetUnitInput = document.getElementById('ex-target-unit');
@@ -779,6 +833,67 @@ document.addEventListener('DOMContentLoaded', async () => {
     const activeWorkoutScreen = document.getElementById('active-workout-screen');
     const activeDayName = document.getElementById('active-day-name');
     const activeExercisesList = document.getElementById('active-exercises-list');
+
+    // --- Rest Timer ---
+    const restTimerOverlay = document.getElementById('rest-timer-overlay');
+    const timerDisplay = document.getElementById('timer-display');
+    const timerPauseBtn = document.getElementById('timer-pause-btn');
+    const timerResetBtn = document.getElementById('timer-reset-btn');
+    const hideTimerBtn = document.getElementById('hide-timer-btn');
+
+    let timerInterval = null;
+    let timerSeconds = 0;
+    let isTimerPaused = false;
+
+    function startTimer() {
+        if (timerInterval) clearInterval(timerInterval);
+        console.log('App: Starting timer');
+        restTimerOverlay.style.display = 'flex';
+        restTimerOverlay.style.zIndex = '10000'; // Force extremely high z-index
+        isTimerPaused = false;
+        timerPauseBtn.textContent = 'Pause';
+
+        timerInterval = setInterval(() => {
+            if (!isTimerPaused) {
+                timerSeconds++;
+                updateTimerDisplay();
+            }
+        }, 1000);
+    }
+
+    function stopTimer() {
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = null;
+        timerSeconds = 0;
+        updateTimerDisplay();
+    }
+
+    function pauseTimer() {
+        isTimerPaused = !isTimerPaused;
+        timerPauseBtn.textContent = isTimerPaused ? 'Resume' : 'Pause';
+    }
+
+    function resetTimer() {
+        timerSeconds = 0;
+        updateTimerDisplay();
+        if (isTimerPaused) {
+            isTimerPaused = false;
+            timerPauseBtn.textContent = 'Pause';
+        }
+    }
+
+    function updateTimerDisplay() {
+        const mins = Math.floor(timerSeconds / 60);
+        const secs = timerSeconds % 60;
+        timerDisplay.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    timerPauseBtn.onclick = pauseTimer;
+    timerResetBtn.onclick = resetTimer;
+    hideTimerBtn.onclick = () => {
+        restTimerOverlay.style.display = 'none';
+        stopTimer();
+    };
     const completeWorkoutBtn = document.getElementById('complete-workout-btn');
 
     // Add Exercise Modal UI
@@ -794,23 +909,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     const addManualExConfirm = document.getElementById('add-manual-ex-confirm');
 
     // Progression UI Elements (Inline)
-    function createInlineHistoryUI(container, exerciseId) {
+    function createInlineHistoryUI(container, exerciseId, buttonContainer = null) {
         const historyBtn = document.createElement('button');
         historyBtn.innerText = 'Progress';
         historyBtn.className = 'view-progression-btn';
         historyBtn.dataset.exTemplateId = exerciseId;
-        historyBtn.style.padding = '2px 8px';
-        historyBtn.style.fontSize = '0.9em';
-        historyBtn.style.cursor = 'pointer';
+        historyBtn.style.width = '100%';
 
         const historyContainer = document.createElement('div');
-        historyContainer.className = 'inline-history-container';
+        historyContainer.className = 'inline-history-container active-history-container';
         historyContainer.style.display = 'none';
-        historyContainer.style.marginTop = '5px';
-        historyContainer.style.fontSize = '0.8em';
-        historyContainer.style.backgroundColor = '#f9f9f9';
-        historyContainer.style.padding = '5px';
+        historyContainer.style.marginTop = '10px';
+        historyContainer.style.fontSize = '0.9em';
+        historyContainer.style.padding = '10px';
+        historyContainer.style.background = '#fff';
         historyContainer.style.border = '1px solid #ddd';
+        historyContainer.style.borderRadius = '8px';
+        historyContainer.style.backgroundColor = '#f9f9f9';
+        historyContainer.style.boxSizing = 'border-box';
+        historyContainer.style.width = '100%';
 
         historyBtn.onclick = async (e) => {
             e.stopPropagation();
@@ -833,7 +950,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         };
 
-        container.appendChild(historyBtn);
+        if (buttonContainer) {
+            buttonContainer.appendChild(historyBtn);
+        } else {
+            container.appendChild(historyBtn);
+        }
         container.appendChild(historyContainer);
     }
 
@@ -845,6 +966,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const progressionList = document.getElementById('progression-list');
     const backToHistoryBtn = document.getElementById('back-to-history-btn');
     const cancelActiveWorkoutBtn = document.getElementById('cancel-active-workout-btn');
+    const workoutBackBtn = document.getElementById('workout-back-btn');
 
     let currentActiveLog = null;
     let historyViewLog = null;
@@ -888,6 +1010,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // Info Button logic
+    const toggleRestTimerBtn = document.getElementById('toggle-rest-timer-btn');
+    if (toggleRestTimerBtn) {
+        toggleRestTimerBtn.onclick = () => {
+            if (restTimerOverlay.style.display === 'flex') {
+                restTimerOverlay.style.display = 'none';
+                stopTimer();
+            } else {
+                restTimerOverlay.style.display = 'flex';
+                restTimerOverlay.style.zIndex = '10000';
+                updateTimerDisplay();
+            }
+        };
+    }
+
     const infoBtn = document.getElementById('info-btn');
     if (infoBtn) {
         infoBtn.onclick = () => {
@@ -1068,26 +1204,41 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             day.exercises.forEach(ex => {
             const dayElEx = document.createElement('div');
-            dayElEx.className = 'exercise-item';
+            dayElEx.className = 'exercise-item program-ex-card';
             dayElEx.dataset.exId = ex.id;
             dayElEx.style.borderBottom = '1px solid #eee';
-            dayElEx.style.padding = '5px 0';
-            dayElEx.style.cursor = 'grab';
+            dayElEx.style.padding = '10px 0';
+            dayElEx.style.display = 'block'; // Ensure it's block, overriding .exercise-item flex
 
             const repsString = ex.targetSets.map(s => s.targetReps || s.maxReps || 0).join(', ');
 
             dayElEx.innerHTML = `
-                <div style="font-weight: bold;">${ex.name}</div>
-                <div style="font-size: 0.85em; color: #666;">
-                    ${ex.bodyPartPrimary} | ${ex.defaultWeight.value}${ex.defaultWeight.unit} | Target Reps: ${repsString}
+                <div class="program-ex-details-row">
+                    <!-- Column 1: Name and Drag Handle -->
+                    <div class="name-column">
+                        <div class="drag-handle">⠿</div>
+                        <div class="card-header" style="padding: 0;">${ex.name}</div>
+                    </div>
+
+                    <!-- Column 2: Info (Targets/Cues) -->
+                    <div class="info-column">
+                        <div class="target-info-block" style="margin: 0;">
+                            <strong>Target:</strong> ${ex.bodyPartPrimary} | ${ex.defaultWeight.value}${ex.defaultWeight.unit} | Reps: ${repsString}
+                        </div>
+                        ${ex.notes ? `<div class="cues-info-block" style="margin: 0;"><strong>Cues:</strong> ${ex.notes}</div>` : ''}
+                    </div>
+
+                    <!-- Column 3: Actions (Buttons) -->
+                    <div class="actions-column">
+                        <button class="edit-ex-btn" data-day-id="${day.id}" data-ex-id="${ex.id}">Edit</button>
+                        <button class="delete-ex-btn" data-day-id="${day.id}" data-ex-id="${ex.id}">Delete</button>
+                        <div class="progress-btn-anchor" data-ex-id="${ex.id}"></div>
+                    </div>
                 </div>
-                ${ex.notes ? `<div style="font-size: 0.8em; color: #888; font-style: italic; margin-top: 2px;">Cues: ${ex.notes}</div>` : ''}
-                <div class="ex-actions" style="margin-top: 5px;">
-                    <button class="edit-ex-btn" data-day-id="${day.id}" data-ex-id="${ex.id}">Edit</button>
-                    <span class="history-anchor" data-ex-id="${ex.id}"></span>
-                    <button class="delete-ex-btn" data-day-id="${day.id}" data-ex-id="${ex.id}">Delete</button>
-                </div>
-                <div class="inline-editor-container" data-ex-id="${ex.id}" style="margin-top: 10px;"></div>
+
+                <!-- Progress Container: Spans full width outside the details row -->
+                <div class="history-anchor-fullwidth" data-ex-id="${ex.id}" style="width: 100%; box-sizing: border-box;"></div>
+                <div class="inline-editor-container" data-ex-id="${ex.id}" style="margin-top: 10px; width: 100%; box-sizing: border-box;"></div>
             `;
             dayEl.querySelector('.exercises-list').appendChild(dayElEx);
         });
@@ -1095,8 +1246,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Inject inline history buttons
             day.exercises.forEach(ex => {
-                const anchor = dayEl.querySelector(`.history-anchor[data-ex-id="${ex.id}"]`);
-                if (anchor) createInlineHistoryUI(anchor, ex.id);
+                const anchor = dayEl.querySelector(`.history-anchor-fullwidth[data-ex-id="${ex.id}"]`);
+                const btnAnchor = dayEl.querySelector(`.progress-btn-anchor[data-ex-id="${ex.id}"]`);
+                if (anchor) createInlineHistoryUI(anchor, ex.id, btnAnchor);
             });
         });
 
@@ -1136,6 +1288,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.querySelectorAll('.exercises-list').forEach(listEl => {
             new Sortable(listEl, {
                 animation: 150,
+                handle: '.drag-handle',
                 onEnd: async (evt) => {
                     const dayId = evt.to.dataset.dayId;
                     const exerciseIds = Array.from(evt.to.children).map(child => child.dataset.exId);
@@ -1170,6 +1323,25 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('ex-editor-title').innerText = 'Add Exercise';
         }
     }
+
+    exNameInput.addEventListener('change', () => {
+        const name = exNameInput.value.trim();
+        const commonEx = window.commonExercisesList?.find(ex => ex.name === name);
+        if (commonEx) {
+            exBodyPartInput.value = commonEx.bodyPart;
+            exNotesInput.value = commonEx.cues;
+        }
+    });
+
+    const manualExNameInput = document.getElementById('manual-ex-name');
+    const manualExBodyPartInput = document.getElementById('manual-ex-bodypart');
+    manualExNameInput.addEventListener('change', () => {
+        const name = manualExNameInput.value.trim();
+        const commonEx = window.commonExercisesList?.find(ex => ex.name === name);
+        if (commonEx) {
+            manualExBodyPartInput.value = commonEx.bodyPart;
+        }
+    });
 
     saveExBtn.addEventListener('click', async () => {
         const name = exNameInput.value.trim();
@@ -1254,8 +1426,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function showActiveWorkout(log) {
+        switchSection('workout-section'); // Ensure we are in workout section
         startWorkoutScreen.style.display = 'none';
+        historyScreen.style.display = 'none';
         activeWorkoutScreen.style.display = 'block';
+        workoutBackBtn.style.display = 'block';
         activeDayName.innerText = `${log.dayName} - ${log.date}`;
         renderActiveExercises(log);
     }
@@ -1266,42 +1441,44 @@ document.addEventListener('DOMContentLoaded', async () => {
             const exEl = document.createElement('div');
             exEl.className = 'logged-exercise-card';
             exEl.dataset.exId = ex.id;
-            exEl.style.border = '1px solid #aaa';
-            exEl.style.margin = '10px 0';
-            exEl.style.padding = '10px';
-            exEl.style.position = 'relative';
-            exEl.style.cursor = 'grab';
+
+            const targetWeight = ex.actualSets[0]?.targetWeight || 0;
+            const targetSets = ex.actualSets.length;
+            const targetReps = ex.actualSets[0]?.targetReps || 0;
 
             exEl.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                    <div style="flex: 1;">
-                        <h4 style="margin: 0;">${ex.name} (${ex.bodyPartPrimary})</h4>
-                        ${ex.targetSnapshot.notes ? `<div style="font-size: 0.85em; color: #777; font-style: italic; margin-top: 2px;">Cues: ${ex.targetSnapshot.notes}</div>` : ''}
-                        <div class="active-history-container" style="margin-top: 5px;">
-                            <span class="active-history-anchor" data-ex-id="${ex.templateExerciseId}"></span>
-                        </div>
-                    </div>
-                    <div style="display: flex; gap: 5px; align-items: center; margin-left: 10px;">
-                        <button class="promote-target-btn" data-ex-id="${ex.id}" title="Set as future target">Set Target</button>
-                        <button class="remove-exercise-btn" data-ex-id="${ex.id}" style="color: red; padding: 2px 5px;">Delete</button>
-                    </div>
+                <div class="card-row" style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                    <div class="drag-handle" style="flex: 0 0 auto;">⠿</div>
+                    <div class="card-header" style="flex: 1;">${ex.name}</div>
+                    <button class="remove-exercise-btn" data-ex-id="${ex.id}" style="width: auto; padding: 6px 10px; margin: 0; font-size: 0.8em; background-color: transparent; color: var(--danger); border: 1px solid #ffcccc;">Remove</button>
                 </div>
-                <div class="logged-sets-list">
+
+                <div class="target-info-block" style="width: 100%; display: block; box-sizing: border-box; margin-bottom: 12px;">
+                    <strong>Target:</strong> ${targetSets} x ${targetReps} @ ${targetWeight}kg
+                </div>
+
+                ${ex.targetSnapshot.notes ? `<div class="cues-info-block" style="width: 100%; display: block; box-sizing: border-box; margin-bottom: 12px;"><strong>Cues:</strong> ${ex.targetSnapshot.notes}</div>` : ''}
+
+                <div class="logged-sets-list" style="margin-bottom: 15px; border-top: 1px solid #eee; padding-top: 10px;">
                     ${ex.actualSets.map((set, idx) => `
-                        <div class="set-row" style="margin-bottom: 5px; font-size: 0.95em;">
-                            <div style="color: #666; margin-bottom: 2px;">
-                                Set ${set.setNumber} | Target: ${set.targetWeight}${set.unit} x ${set.targetReps}
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <span>Weight: <input type="number" class="actual-weight" data-ex-id="${ex.id}" data-set-idx="${idx}" value="${set.actualWeight}" style="width: 50px; padding: 3px;"></span>
-                                <span>Reps: <input type="number" class="actual-reps" data-ex-id="${ex.id}" data-set-idx="${idx}" value="${set.actualReps || ''}" style="width: 45px; padding: 3px;"></span>
+                        <div class="set-row" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 0;">
+                            <div style="font-weight: bold; color: #555;">Set ${set.setNumber}</div>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="number" class="actual-weight" data-ex-id="${ex.id}" data-set-idx="${idx}" value="${set.actualWeight}" placeholder="kg" style="width: 70px; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <input type="number" class="actual-reps" data-ex-id="${ex.id}" data-set-idx="${idx}" value="${set.actualReps || ''}" placeholder="reps" style="width: 70px; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                             </div>
                         </div>
                     `).join('')}
                 </div>
-                <div style="margin-top: 10px;">
-                    <button class="add-set-btn" data-ex-id="${ex.id}">+ Add Set</button>
-                    <button class="remove-set-btn" data-ex-id="${ex.id}">- Remove Set</button>
+
+                <div class="card-actions horizontal-actions" style="display: flex !important; flex-direction: row !important; flex-wrap: wrap !important; gap: 10px !important; width: 100% !important;">
+                    <button class="add-set-btn" data-ex-id="${ex.id}" style="flex: 1 1 0% !important; min-width: 80px !important; margin: 0 !important; width: auto !important;">+ Add Set</button>
+                    <button class="remove-set-btn" data-ex-id="${ex.id}" style="flex: 1 1 0% !important; min-width: 80px !important; margin: 0 !important; width: auto !important;">- Remove Set</button>
+                    <button class="promote-target-btn" data-ex-id="${ex.id}" style="flex: 1 1 0% !important; min-width: 80px !important; margin: 0 !important; width: auto !important;">Set as Target</button>
+                </div>
+
+                <div class="active-history-fullwidth" data-ex-id="${ex.templateExerciseId}" style="width: 100%;">
+                    <span class="active-history-anchor" data-ex-id="${ex.templateExerciseId}"></span>
                 </div>
             `;
             activeExercisesList.appendChild(exEl);
@@ -1318,12 +1495,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             input.addEventListener('change', async (e) => {
                 const exId = e.target.dataset.exId;
                 const setIdx = parseInt(e.target.dataset.setIdx);
-                const val = parseFloat(e.target.value);
+                const val = parseFloat(e.target.value) || 0;
                 const field = e.target.classList.contains('actual-reps') ? 'actualReps' : 'actualWeight';
 
                 const log = isEditingHistory ? historyViewLog : currentActiveLog;
                 if (!log) return;
                 await workoutEngine.updateSet(log.id, exId, setIdx, { [field]: val });
+
+                // Start/Reset Rest Timer when a set is completed (reps > 0)
+                if (field === 'actualReps' && val > 0 && !isEditingHistory) {
+                    resetTimer();
+                    startTimer();
+                }
+
                 // Update local object to reflect the change
                 const ex = log.exercises.find(e => e.id === exId);
                 ex.actualSets[setIdx][field] = val;
@@ -1394,6 +1578,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Initialize Sortable for active workout
         new Sortable(activeExercisesList, {
             animation: 150,
+            handle: '.drag-handle',
             onEnd: async (evt) => {
                 const exerciseIds = Array.from(activeExercisesList.children).map(child => child.dataset.exId);
                 const log = isEditingHistory ? historyViewLog : currentActiveLog;
@@ -1501,13 +1686,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                 alert('Workout completed and saved!');
             }
             activeWorkoutScreen.style.display = 'none';
+            workoutBackBtn.style.display = 'none'; // Ensure back button is hidden
             if (isEditingHistory) {
                 historyScreen.style.display = 'block';
                 historyViewLog = null;
                 isEditingHistory = false;
+                switchSection('history-section');
                 await renderHistory();
             } else {
                 currentActiveLog = null;
+                switchSection('workout-section');
                 startWorkoutBtn.style.display = 'block';
             }
         }
@@ -1515,6 +1703,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     cancelActiveWorkoutBtn.addEventListener('click', () => {
         activeWorkoutScreen.style.display = 'none';
+        workoutBackBtn.style.display = 'none';
         if (isEditingHistory) {
             historyScreen.style.display = 'block';
             historyViewLog = null;
@@ -1522,11 +1711,28 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Restore active workout screen if it was there
             if (currentActiveLog) {
                 activeWorkoutScreen.style.display = 'block';
+                workoutBackBtn.style.display = 'block';
                 renderActiveExercises(currentActiveLog);
             }
         } else {
             currentActiveLog = null;
             startWorkoutBtn.style.display = 'block';
+        }
+    });
+
+    workoutBackBtn.addEventListener('click', () => {
+        if (isEditingHistory) {
+            // When viewing history details, "Back" should return to history list
+            activeWorkoutScreen.style.display = 'none';
+            workoutBackBtn.style.display = 'none';
+            historyScreen.style.display = 'block';
+            historyViewLog = null;
+            isEditingHistory = false;
+            switchSection('history-section');
+            renderHistory();
+        } else {
+            // Otherwise it acts like cancel/exit
+            cancelActiveWorkoutBtn.click();
         }
     });
 

@@ -170,26 +170,70 @@
 - **Risks:** Inconsistent daily totals if meal updates are not correctly propagated.
 - **Dependencies:** PLAN-011, PLAN-013.
 
-## PLAN-018: Exercise Selection and Reordering
+## PLAN-018: Exercise Selection and Reordering with Handle
 **Related Requirements:** R26, R27
 **Priority:** High
-**Description:** Enhance the program editor and active workout UI to support exercise selection from existing templates and drag-and-drop reordering of exercises.
+**Description:** Enhance the program editor and active workout UI to support exercise selection from existing templates and drag-and-drop reordering of exercises via a dedicated handle.
 **Technical Scope:**
-- **Affected modules:** `TemplateService`, `WorkoutEngine`, `AppUI`
+- **Affected modules:** `TemplateService`, `WorkoutEngine`, `AppUI`, `StyleSheet`
 - **Data model impact:** Maintain consistent `displayOrder` during drag-and-drop.
 - **API changes:** `WorkoutEngine.reorderExercises(logId, exerciseIds)`.
-- **UI changes:** Add exercise name datalist to the exercise editor; integrate SortableJS for drag-and-drop reordering in Program and Active Workout views.
+- **UI changes:** Add exercise name datalist to the exercise editor; integrate SortableJS for drag-and-drop reordering in Program and Active Workout views; add visible `⠿` drag handle to each exercise item; update SortableJS to use `handle` option.
 - **Risks:** Unintended reordering of sets; data loss if reorder is not persisted correctly.
 - **Dependencies:** PLAN-003, PLAN-008.
 
-## PLAN-019: Cloud Synchronization and Authentication
-**Related Requirements:** R28, R29
+## PLAN-021: Bug Fixes (History and Progress)
+**Related Requirements:** R33
 **Priority:** High
-**Description:** Implement user authentication via Firebase Auth (Google Provider) and a cloud-based backup/sync system using Firestore. This maintains the "local-first" approach while adding multi-device support.
+**Description:** Fix regression bugs in history/progress tracking and Workout History Detail view reliability.
 **Technical Scope:**
-- **Affected modules:** `AuthService`, `SyncService`, `PersistenceService`, `AppUI`
-- **Data model impact:** Associating all data with `uid`.
-- **Infrastructure changes:** Integration of Firebase SDK.
-- **API changes:** New authentication flow and background sync processes.
-- **Risks:** Synchronization conflicts (last-write-wins); ensuring offline capability remains seamless; managing data migration from local-only to cloud-synced accounts.
-- **Dependencies:** PLAN-001.
+- **Affected modules:** `ProgressionService`, `AppUI`.
+- **Bug Fixes:**
+    - Fix `ProgressionService` to exclude unlogged sets.
+    - Fix Workout History Detail view reliability in `app.js`.
+- **Risks:** Regressions in data filtering.
+- **Dependencies:** PLAN-003, PLAN-004.
+
+## PLAN-022: Improved Exercise Card UI
+**Related Requirements:** R31
+**Priority:** High
+**Description:** Transition from a structured, space-efficient card UI for exercises. Includes horizontal buttons for active workouts and a 3-column grid for the program editor with full-width expansion.
+**Technical Scope:**
+- **Affected modules:** `AppUI` (renderActiveExercises, renderProgram).
+- **UI changes:**
+    - **Active Workout**: `.horizontal-actions` (flex-direction: row, equal width buttons).
+    - **Program Editor**: `.program-ex-details-row` (grid-template-columns: 1fr 1fr 1fr), full-width history expansion container.
+- **Infrastructure**: CSS `!important` flags and `box-sizing: border-box` for robustness.
+- **Risks:** Increased vertical scrolling; layout issues on small screens.
+- **Dependencies:** PLAN-003, PLAN-002.
+
+## PLAN-023: Persistent Rest Timer
+**Related Requirements:** R32
+**Priority:** Medium
+**Description:** Implement a screen-locked floating rest timer on the workout screen.
+**Technical Scope:**
+- **Affected modules:** `AppUI`, `TimerService`.
+- **UI changes:** Fixed-position timer overlay with Start/Pause/Reset/Hide controls.
+- **Risks:** UI clutter; timer reset on page reload/navigation.
+- **Dependencies:** PLAN-003.
+
+## PLAN-024: Exercise & Nutrition Database Integration
+**Related Requirements:** R30, R35
+**Priority:** Medium
+**Description:** Integrate external APIs (USDA FoodData Central) and pre-seeded "Common Items" database for quick exercise and food selection.
+**Technical Scope:**
+- **Affected modules:** `ExternalApiService`, `AppInitializer`, `NutritionUI`, `ProgramUI`.
+- **UI changes:** External search interface for foods; searchable datalists for exercises.
+- **Infrastructure changes:** Environment variables for API keys; Fetch/XHR for external calls.
+- **Risks:** API rate limits; mapping diverse API response formats to internal macro model.
+- **Dependencies:** PLAN-002, PLAN-011.
+
+## PLAN-025: Navigation Improvements (Back to Home)
+**Related Requirements:** R34
+**Priority:** High
+**Description:** Add a persistent "Back to Home" button on the workout screen.
+**Technical Scope:**
+- **Affected modules:** `AppUI`.
+- **UI changes:** Screen-locked "Back" button on Workout Page.
+- **Risks:** Visual interference with other UI elements (like timer).
+- **Dependencies:** PLAN-003.

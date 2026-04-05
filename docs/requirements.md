@@ -336,15 +336,14 @@ As a user, I want to select from existing exercises when adding a new one to my 
 - **WHEN** an existing exercise is selected.
 - **THEN** the system SHALL auto-fill its name, body part, and default targets.
 
-### R27: Drag-and-Drop Reordering
+### R27: Drag-and-Drop Reordering with Handle
 User Story
-As a user, I want to reorder exercises within a workout by dragging them, so I can easily adjust my training flow in both the program and active sessions.
+As a user, I want to reorder exercises within a workout by dragging a dedicated handle, so I can easily adjust my training flow without accidental drags during normal interaction.
 
 Acceptance Criteria
-- **WHEN** viewing a program day's exercises in the Program Editor.
-- **THEN** the system SHALL allow dragging and dropping exercises to change their order.
-- **WHEN** an active workout session is ongoing.
-- **THEN** the system SHALL allow dragging and dropping exercises to change their order in that specific session.
+- **WHEN** viewing a program day's exercises or an active workout.
+- **THEN** each exercise SHALL feature a visible drag handle (e.g., "⠿").
+- **THEN** the system SHALL ONLY allow dragging and dropping exercises by interacting with the drag handle.
 - **WHEN** an exercise is reordered.
 - **THEN** the system SHALL immediately persist the new order to the respective `program` or `WorkoutLog`.
 
@@ -360,20 +359,73 @@ Acceptance Criteria
 - **THEN** the system SHALL associate all subsequent data writes with the user's unique ID (UID).
 - **THEN** the system SHALL provide a "Sign Out" option in the Data Management section.
 
-### R29: Cloud Backup and Multi-Device Sync (Firestore)
+### R33: Bug Fixes - History and Progress
+Acceptance Criteria
+- **WHEN** viewing exercise progress history.
+- **THEN** the system SHALL only include sets that have actually been performed (non-null actual reps).
+- **WHEN** viewing history details.
+- **THEN** the system SHALL correctly display the historical data without interfering with active workout state.
+
+### R30: Exercise and Nutrition API Integration
 User Story
-As a user, I want my data to be automatically backed up to the cloud and synced across my devices so that I don't lose progress and can switch between phone and desktop seamlessly.
+As a user, I want to select exercises and foods from a comprehensive database so that I don't have to manually enter all details.
 
 Acceptance Criteria
-- **WHEN** the user is signed in and performs a data-changing action (e.g., logging a set, adding a meal).
-- **THEN** the system SHALL first persist the change to the local IndexedDB (Local-First).
-- **THEN** the system SHALL attempt to synchronize the change to Firestore in the background.
-- **WHEN** the app starts and the user is signed in.
-- **THEN** the system SHALL check for remote changes in Firestore and merge them into the local IndexedDB.
-- **WHEN** the user is offline.
-- **THEN** the system SHALL continue to function using local data.
-- **THEN** the system SHALL queue changes to be synced once an internet connection is restored.
-- **THEN** Firestore SHALL serve as the source of truth for all user data (program, workout logs, nutrition logs, settings).
+- **WHEN** adding an exercise or nutrition item.
+- **THEN** the system SHALL provide a searchable list of items from an external or pre-defined API/JSON database.
+- **THEN** the system SHALL allow adding custom items if they are not in the list.
+
+### R31: Improved Exercise Card UI (Refined)
+User Story
+As a user, I want a spacious and structured exercise card UI that optimizes mobile screen space, clearly separating information (Name, Targets, Cues) from action buttons and expansion content (Progress/History).
+
+Acceptance Criteria
+- **Active Workout Card**:
+    - Action buttons ("Add Set", "Remove Set", "Set as Target") SHALL be aligned **horizontally** in a single row (`.horizontal-actions`).
+    - Buttons SHALL share the width equally and wrap gracefully on very narrow screens.
+    - Information (Name, Targets, Cues) SHALL be stacked vertically.
+- **Program Editor Card**:
+    - The main container SHALL be a block element to allow children to stack.
+    - The top section SHALL be a **3-column grid** details row (`.program-ex-details-row`) with columns for Name, Info (Targets/Cues), and Buttons (Edit/Delete/Progress) respectively.
+    - Columns SHALL be equal width (1/3 each).
+    - The "Progress" expansion container SHALL be located **outside** the 3-column grid row but inside the card, allowing it to span the **100% full width** of the card.
+- **General**:
+    - Drag handles (`⠿`) SHALL be preserved and functional within the new layouts.
+    - CSS `!important` flags SHALL be used to ensure layout robustness against global style overrides.
+    - `box-sizing: border-box` SHALL be applied to all containers to prevent horizontal overflow.
+
+### R32: Screen-Locked Rest Timer
+User Story
+As a user, I want a persistent rest timer on the workout screen so that I can easily track my recovery time between sets.
+
+Acceptance Criteria
+- **WHEN** a workout is active.
+- **THEN** the system SHALL display a small timer locked to the corner of the screen.
+- **THEN** the timer SHALL include Start, Reset, Pause, and Hide controls.
+
+### R34: Navigation Improvements ('Back' to Homepage Button)
+User Story
+As a user, I want a "Back" button on the workout screen that is locked to the screen, so I can easily return to the homepage during or after my workout.
+
+Acceptance Criteria
+- **WHEN** a workout is active or being reviewed (Workout Page).
+- **THEN** the system SHALL display a "Back" button locked to a fixed position on the screen.
+- **THEN** clicking the "Back" button SHALL return the user to the main/home screen.
+
+### R35: External Database Integration (Nutrition & Exercise)
+User Story
+As a user, I want to search for food and exercises from an external database so that I can quickly populate nutritional values and training details without manual entry.
+
+Acceptance Criteria
+- **WHEN** adding an ingredient to a meal.
+- **THEN** the system SHALL provide a search interface for the USDA FoodData Central API.
+- **WHEN** a food item is selected from the API results.
+- **THEN** the system SHALL automatically map its nutrients (Calories, Protein, Carbs, Fats) to the ingredient editor.
+- **WHEN** adding a new exercise to the program.
+- **THEN** the system SHALL provide a list of common exercises (from a pre-seeded JSON or external API).
+- **WHEN** an exercise is selected.
+- **THEN** the system SHALL auto-fill its body part and cues.
+- **THEN** the system SHALL allow the user to override any auto-filled value.
 
 ## 3. Non-Functional Requirements
 

@@ -227,7 +227,7 @@
 - [x] Verify history and program are reset correctly
   (PLAN-017 | R25 | LLD-017)
 
-## Phase 18 — Exercise Selection & Reordering
+## Phase 18 — Exercise Selection & Reordering with Handle
 - [x] Create LLD-018 document for exercise selection and reordering
   (PLAN-018 | R26, R27 | LLD-018)
 - [x] Implement unique exercise datalist for program editor
@@ -242,25 +242,47 @@
   (PLAN-018 | R27 | LLD-018)
 - [x] Implement drag-and-drop reordering in Active Workout
   (PLAN-018 | R27 | LLD-018)
-- [x] Verify reordering persistence across sessions
-  (PLAN-018 | R27 | LLD-018)
+- [x] Create LLD-020 document for exercise drag handle
+  (PLAN-018 | R27 | LLD-020)
+- [x] Add visible `⠿` drag handle to exercise items in `js/app.js`
+  (PLAN-018 | R27 | LLD-020)
+- [x] Restrict SortableJS reordering to drag handle via `handle` option
+  (PLAN-018 | R27 | LLD-020)
+- [x] Apply drag handle styling in `css/style.css`
+  (PLAN-018 | R27 | LLD-020)
+- [x] Verify reordering persistence and prevent accidental drags
+  (PLAN-018 | R27 | LLD-020)
 
-## Phase 19 — Cloud Sync & Auth
-- [x] Create LLD-019 document for Cloud Sync and Auth
-  (PLAN-019 | R28, R29 | LLD-019)
-- [x] Install and initialize Firebase SDK
-  (PLAN-019 | R28, R29 | LLD-019)
-- [x] Implement `AuthService` (Google Sign-In/Out)
-  (PLAN-019 | R28 | LLD-019)
-- [x] Update `PersistenceService` with `updatedAt` metadata and sync event triggers
-  (PLAN-019 | R29 | LLD-019)
-- [x] Implement `SyncService` with push/pull/merge logic
-  (PLAN-019 | R29 | LLD-019)
-- [x] Add Authentication UI (Login modal and Sign-Out in settings)
-  (PLAN-019 | R28 | LLD-019)
-- [x] Implement initial data migration and background synchronization
-  (PLAN-019 | R29 | LLD-019)
-- [x] Verify multi-device synchronization and offline behavior
-  (PLAN-019 | R28, R29 | LLD-019)
-- [x] Secure Firebase credentials using `dotenv-webpack` and environment variables
-  (PLAN-019 | R28, R29 | LLD-019)
+## Phase 21 — Bug Fixes (History & Progress)
+- [x] Fix `ProgressionService.getExerciseHistory` logic (PLAN-021 | R33 | LLD-021)
+- [x] Verify "View Details" flow in `app.js` (PLAN-021 | R33 | LLD-021)
+
+## Phase 22 — Exercise Card UI Redesign
+- [x] Implement horizontal action buttons in Active Workout for mobile efficiency (PLAN-022 | R31 | LLD-022)
+- [x] Implement vertical stacking for Name, Targets, and Cues in Active Workout (PLAN-022 | R31 | LLD-022)
+- [x] Implement 3-column equal-width grid for Program Editor details (PLAN-022 | R31 | LLD-022)
+- [x] Ensure Program card uses a block container to support full-width expansion (PLAN-022 | R31 | LLD-022)
+- [x] Implement full-width Progress/History expansion below the details row (PLAN-022 | R31 | LLD-022)
+- [x] Verify drag-handle functionality remains robust with new grid/flex layouts (PLAN-022 | R31 | LLD-022)
+- [x] Use `!important` and `box-sizing: border-box` to ensure UI stability (PLAN-022 | R31 | LLD-022)
+
+## Phase 23 — Floating Rest Timer
+- [x] Create floating Rest Timer overlay with Start/Pause/Reset/Hide (PLAN-021 | R32 | LLD-023)
+- [x] Integrate timer to auto-start on set completion during active workout (PLAN-021 | R32 | LLD-023)
+- [x] Fix: Ensure timer visibility and z-index are prioritized (PLAN-021 | R32 | LLD-023)
+- [x] Fix: Add persistent "Timer" button to active workout screen for manual toggle (PLAN-021 | R32 | LLD-023)
+- [ ] FIX: FIX TIMER
+
+## Phase 24 — Database Integration
+- [x] Create `ExternalApiService.js` for USDA API calls (PLAN-024 | R35 | LLD-024)
+- [x] Implement online food search in "Add Ingredient" modal (PLAN-024 | R35 | LLD-024)
+- [x] Create `data/exercises.json` with common exercises (PLAN-024 | R30 | LLD-024)
+- [x] Implement exercise `<datalist>` and auto-fill in Program Editor (PLAN-024 | R30 | LLD-024)
+- [x] Verify API mapping and auto-fill logic (PLAN-024 | R30, R35 | LLD-024)
+- [x] Fix ReferenceError in exercise datalist initialization
+- [x] Fix ingredient search input UI scaling issues
+
+## Phase 25 — Navigation Improvements
+- [x] Add inline "Back" button to Active Workout header (PLAN-025 | R34 | LLD-025)
+- [x] Implement navigation logic to return to home/main (PLAN-025 | R34 | LLD-025)
+- [x] Apply CSS for inline flex position with workout name (PLAN-025 | R34 | LLD-025)
