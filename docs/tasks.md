@@ -298,3 +298,8 @@
 - [x] Implement scroll-down auto-minimization for Active Workout bars (PLAN-026 | R37 | LLD-026)
 - [x] Implement scroll-to-top auto-expansion for Active Workout bars (PLAN-026 | R37 | LLD-026)
 - [x] Fix vibration issue and add smooth "popping" animations for UI bars (PLAN-026 | R38 | LLD-026)
+
+## Phase 27 — Infrastructure & Performance
+- [x] Optimize Webpack bundle size by implementing `splitChunks` for vendor code
+- [x] Adjust Webpack performance limits to accommodate Firebase SDK size
+- [x] Update common Webpack configuration to support multiple output files
