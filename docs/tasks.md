@@ -303,3 +303,6 @@
 - [x] Optimize Webpack bundle size by implementing `splitChunks` for vendor code
 - [x] Adjust Webpack performance limits to accommodate Firebase SDK size
 - [x] Update common Webpack configuration to support multiple output files
+
+## Phase 28 — UI Restoration
+- [x] Restore missing Nutrition Targets UI in `index.html` Data section
