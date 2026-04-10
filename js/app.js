@@ -1722,6 +1722,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         new Sortable(activeExercisesList, {
             animation: 150,
             handle: '.drag-handle',
+            forceFallback: true,      // Fixes behavior in scrollable containers
+            fallbackTolerance: 3,     // Prevents jittery starts
+            delay: 10,                // Small delay for touch devices
+            delayOnTouchOnly: true,   // Only apply delay on touch
             onEnd: async (evt) => {
                 const exerciseIds = Array.from(activeExercisesList.children).map(child => child.dataset.exId);
                 const log = isEditingHistory ? historyViewLog : currentActiveLog;
