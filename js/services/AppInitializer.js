@@ -24,6 +24,9 @@ class AppInitializer {
                 console.info('AppInitializer: Seeding default nutrition ranges.');
                 await this.seedDefaultSettings();
             }
+
+            // Phase 32: Seed global exercise library
+            await this.seedExercisesIfEmpty();
         } catch (error) {
             console.error('AppInitializer: Error during init', error);
             throw error;
@@ -159,6 +162,25 @@ class AppInitializer {
             isActive: true,
             displayOrder: setNums[0] // Simple order for seeding
         };
+    }
+
+    /**
+     * Seeds the global exercises store if it's currently empty.
+     * (PLAN-032 | R42 | LLD-032)
+     */
+    async seedExercisesIfEmpty() {
+        try {
+            const count = await persistenceService.countExercises();
+            if (count === 0) {
+                console.info('AppInitializer: Seeding exercise library...');
+                const response = await fetch('./data/exercises.json');
+                const exercises = await response.json();
+                await persistenceService.bulkSaveExercises(exercises);
+                console.info(`AppInitializer: Seeded ${exercises.length} exercises.`);
+            }
+        } catch (error) {
+            console.error('AppInitializer: Failed to seed exercises', error);
+        }
     }
 }
 

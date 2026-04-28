@@ -19,10 +19,18 @@ class AuthService {
         this.provider = null;
         this.user = null;
         this.initialized = false;
+        this._offlineMode = false;
     }
 
     async init(config = firebaseConfig) {
         if (this.initialized) return;
+
+        if (!this.isOnline()) {
+            console.info('AuthService: Offline detected, skipping Firebase init');
+            this._offlineMode = true;
+            this.initialized = true; // Still marked as initialized to avoid re-init
+            return;
+        }
 
         try {
             this.app = initializeApp(config);
@@ -40,6 +48,26 @@ class AuthService {
         } catch (error) {
             console.error('AuthService: Initialization failed', error);
         }
+    }
+
+    isOnline() {
+        return navigator.onLine;
+    }
+
+    isOfflineMode() {
+        return this._offlineMode;
+    }
+
+    continueOffline() {
+        console.info('AuthService: Continuing in offline mode');
+        this._offlineMode = true;
+        // Dispatch event so app can proceed
+        const event = new CustomEvent('auth-state-changed', { detail: { user: null, offline: true } });
+        window.dispatchEvent(event);
+    }
+
+    isReady() {
+        return this.isAuthenticated() || this.isOfflineMode();
     }
 
     async signInWithGoogle() {

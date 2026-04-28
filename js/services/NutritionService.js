@@ -14,11 +14,13 @@ class NutritionService {
         let log = await persistenceService.getById('nutritionLogs', id);
 
         if (!log) {
+            const settings = await persistenceService.getById('settings', 'current') || {};
             log = {
                 id,
                 date,
                 meals: [],
                 status: 'draft',
+                targetsSnapshot: settings.nutritionTargets ? JSON.parse(JSON.stringify(settings.nutritionTargets)) : null,
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString()
             };
@@ -51,9 +53,66 @@ class NutritionService {
     /**
      * Removes a meal from a log.
      */
-    removeMeal(log, mealId) {
+    async removeMeal(log, mealId) {
         log.meals = log.meals.filter(m => m.id !== mealId);
         this.updateLogTotals(log);
+        await this.saveLog(log);
+    }
+
+    /**
+     * Updates an ingredient within a meal.
+     */
+    async updateIngredient(log, mealId, ingredientName, updatedWeight) {
+        const meal = log.meals.find(m => m.id === mealId);
+        if (!meal) return;
+
+        const ingIdx = meal.ingredients.findIndex(ing => ing.name === ingredientName);
+        if (ingIdx === -1) return;
+
+        const ingredient = meal.ingredients[ingIdx];
+        const baseIngredient = await ingredientService.getByName(ingredientName);
+
+        if (baseIngredient) {
+            const macros = ingredientService.calculateMacros(baseIngredient, updatedWeight);
+            meal.ingredients[ingIdx] = {
+                ...ingredient,
+                weight: updatedWeight,
+                ...macros
+            };
+            this.updateLogTotals(log);
+            await this.saveLog(log);
+        }
+    }
+
+    /**
+     * Removes an ingredient from a meal.
+     */
+    async removeIngredient(log, mealId, ingredientName) {
+        const meal = log.meals.find(m => m.id === mealId);
+        if (!meal) return;
+
+        meal.ingredients = meal.ingredients.filter(ing => ing.name !== ingredientName);
+        this.updateLogTotals(log);
+        await this.saveLog(log);
+    }
+
+    /**
+     * Updates a meal's name.
+     */
+    async updateMealName(log, mealId, newName) {
+        const meal = log.meals.find(m => m.id === mealId);
+        if (meal) {
+            meal.name = newName;
+            await this.saveLog(log);
+        }
+    }
+
+    /**
+     * Deletes a nutrition log by date.
+     */
+    async deleteLog(date) {
+        const id = `nutrition_${date}`;
+        await persistenceService.delete('nutritionLogs', id);
     }
 
     /**
@@ -158,7 +217,7 @@ class NutritionService {
         const workouts = await persistenceService.getAll('workoutLogs');
         const settings = await persistenceService.getById('settings', 'current') || {};
 
-        const targets = settings.nutritionTargets || {
+        const globalTargets = settings.nutritionTargets || {
             trainingDay: {
                 calories: { min: 2200, max: 2300, critMinus: 100, critPlus: 100 },
                 protein: { min: 145, max: 155, critMinus: 10, critPlus: 50 },
@@ -176,6 +235,9 @@ class NutritionService {
         const summaries = logs.map(log => {
             const totals = this.calculateDayTotals(log);
             const workoutOnDate = workouts.some(w => w.date === log.date && w.status === 'completed');
+
+            // Use snapshotted targets if available, otherwise fallback to settings
+            const targets = log.targetsSnapshot || globalTargets;
             const dailyTarget = workoutOnDate ? targets.trainingDay : targets.restDay;
 
             return {

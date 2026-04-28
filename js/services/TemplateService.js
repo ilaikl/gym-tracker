@@ -56,6 +56,26 @@ class TemplateService {
     }
 
     /**
+     * Removes a day and all its exercises from the program.
+     * Does NOT affect existing WorkoutLogs (snapshot immutability).
+     * (PLAN-034 | R48 | LLD-034)
+     * @param {string} dayId
+     */
+    async deleteDay(dayId) {
+        const program = await this.getProgram();
+        if (!program) throw new Error('No program found');
+
+        program.days = program.days.filter(d => d.id !== dayId);
+
+        // Reorder remaining days
+        program.days.forEach((day, index) => {
+            day.order = index + 1;
+        });
+
+        await this.saveProgram(program);
+    }
+
+    /**
      * Adds an exercise to a specific day.
      */
     async addExercise(dayId, exerciseData) {
@@ -108,6 +128,19 @@ class TemplateService {
             if (exIndex === -1) throw new Error('Exercise not found');
 
             day.exercises[exIndex] = { ...day.exercises[exIndex], ...newData };
+        }
+
+        // Phase 36: Sync targets to global library
+        try {
+            const targets = {
+                targetSets: newData.targetSets,
+                targetReps: newData.targetReps,
+                targetWeight: newData.defaultWeight ? newData.defaultWeight.value : undefined
+            };
+            // Use exercise name as ID for the global library
+            await persistenceService.updateExerciseTargets(newData.name, targets);
+        } catch (e) {
+            console.warn('TemplateService: Failed to sync targets to library', e);
         }
 
         await this.saveProgram(program);

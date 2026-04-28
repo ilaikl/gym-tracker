@@ -3,7 +3,7 @@
  * (PLAN-001 | R5 | LLD-001)
  */
 class PersistenceService {
-    constructor(dbName = 'WorkoutTrackerDB', version = 2) {
+    constructor(dbName = 'WorkoutTrackerDB', version = 3) {
         this.dbName = dbName;
         this.version = version;
         this.db = null;
@@ -43,6 +43,14 @@ class PersistenceService {
 
                 if (!db.objectStoreNames.contains('ingredients')) {
                     db.createObjectStore('ingredients', { keyPath: 'id' });
+                }
+
+                // Phase 32: Global Exercise Library
+                if (!db.objectStoreNames.contains('exercises')) {
+                    const exStore = db.createObjectStore('exercises', { keyPath: 'id' });
+                    exStore.createIndex('muscle', 'muscle', { unique: false });
+                    exStore.createIndex('name', 'name', { unique: false });
+                    exStore.createIndex('source', 'source', { unique: false });
                 }
             };
 
@@ -113,6 +121,74 @@ class PersistenceService {
             request.onsuccess = () => resolve(request.result);
             request.onerror = () => reject(request.error);
         });
+    }
+
+    /**
+     * Save or update a single exercise.
+     * (PLAN-032 | R41 | LLD-032)
+     */
+    async saveExercise(exercise) {
+        return this.save('exercises', exercise);
+    }
+
+    /**
+     * Bulk save exercises.
+     * (PLAN-032 | R42 | LLD-032)
+     */
+    async bulkSaveExercises(exercises) {
+        const store = await this.getStore('exercises', 'readwrite');
+        return new Promise((resolve, reject) => {
+            let i = 0;
+            function putNext() {
+                if (i < exercises.length) {
+                    // Add updatedAt for sync
+                    if (!exercises[i].updatedAt) {
+                        exercises[i].updatedAt = new Date().toISOString();
+                    }
+                    const request = store.put(exercises[i]);
+                    request.onsuccess = putNext;
+                    request.onerror = () => reject(request.error);
+                    i++;
+                } else {
+                    resolve();
+                }
+            }
+            putNext();
+        });
+    }
+
+    /**
+     * Returns all exercises.
+     * (PLAN-032 | R43 | LLD-032)
+     */
+    async getAllExercises() {
+        return this.getAll('exercises');
+    }
+
+    /**
+     * Counts exercises in the store.
+     * (PLAN-032 | R42 | LLD-032)
+     */
+    async countExercises() {
+        const store = await this.getStore('exercises');
+        return new Promise((resolve, reject) => {
+            const request = store.count();
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+        });
+    }
+
+    /**
+     * Returns all exercises matching the given muscle group.
+     * @param {string} muscle
+     * @returns {Promise<Array>}
+     */
+    async getExercisesByMuscle(muscle) {
+        const all = await this.getAll('exercises');
+        return all.filter(ex =>
+            (ex.bodyPartPrimary && ex.bodyPartPrimary.toLowerCase() === muscle.toLowerCase()) ||
+            (ex.muscle && ex.muscle.toLowerCase() === muscle.toLowerCase())
+        );
     }
 
     async delete(storeName, id) {
@@ -206,6 +282,25 @@ class PersistenceService {
         }
         console.info(`PersistenceService: Merged logs. Added: ${addedCount}, Updated: ${updatedCount}`);
         return { addedCount, updatedCount };
+    }
+
+    /**
+     * Updates stored targets for an exercise in the global library.
+     * (PLAN-036 | R50 | LLD-036)
+     * @param {string} exerciseId - Name or ID of the exercise
+     * @param {Object} targets - { targetReps, targetSets, targetWeight }
+     */
+    async updateExerciseTargets(exerciseId, targets) {
+        const exercise = await this.getById('exercises', exerciseId);
+        if (exercise) {
+            const updated = {
+                ...exercise,
+                ...targets,
+                updatedAt: new Date().toISOString()
+            };
+            return this.saveExercise(updated);
+        }
+        return null;
     }
 }
 

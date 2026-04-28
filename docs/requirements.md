@@ -427,6 +427,205 @@ Acceptance Criteria
 - **THEN** the system SHALL auto-fill its body part and cues.
 - **THEN** the system SHALL allow the user to override any auto-filled value.
 
+---
+
+## Category A — Active Workout Improvements
+
+### R36: Replace Exercise in Active Workout
+**User Story**
+As a user, I want to replace an exercise in my active workout with a suggested alternative, so I can adapt my training without losing the set structure.
+
+**Acceptance Criteria**
+- **WHEN** viewing an exercise in an active workout
+- **THEN** the system SHALL provide a "Replace" button on the exercise card.
+- **WHEN** the user taps "Replace"
+- **THEN** the system SHALL display a list of suggested replacement exercises that target the same primary muscle group.
+- **THEN** the list SHALL prioritise exercises already in the user's exercise library (program or manual exercises).
+- **WHEN** a replacement is selected
+- **THEN** the system SHALL swap the exercise in the active `WorkoutLog`, preserving the existing set count and targets.
+- **THEN** the system SHALL immediately persist the change.
+
+### R37: Fix Drag-and-Drop Order Persistence in Active Workout
+**User Story**
+As a user, I want drag-and-drop reordering in my active workout to actually save the new order, so my exercise sequence is correct.
+
+**Acceptance Criteria**
+- **WHEN** the user drags an exercise to a new position in an active workout
+- **THEN** the system SHALL update the `displayOrder` of all affected `LoggedExercise` entries.
+- **THEN** the system SHALL persist the new order to the `WorkoutLog` in IndexedDB immediately.
+- **WHEN** the workout screen is re-rendered
+- **THEN** the exercises SHALL appear in the persisted order.
+
+### R38: Fix Set Targets — Per-Set Rep Targets
+**User Story**
+As a user, I want each set to show its own rep target (e.g., Set 1: 12 reps, Set 2: 11, Set 3: 10), so I know exactly what I'm aiming for on every set.
+
+**Acceptance Criteria**
+- **WHEN** an exercise has a rep target defined (fixed or descending)
+- **THEN** each set row SHALL display its individual target reps next to the set number.
+- **WHEN** the target is a single value (e.g., 3×10)
+- **THEN** all sets SHALL show that same value.
+- **WHEN** the target is a range or per-set list
+- **THEN** each set SHALL show its specific target value.
+- **THEN** the target SHALL be visually distinct from the actual reps input (e.g., lighter text or label).
+
+### R39: Fix Set Target on New Manual Exercise
+**User Story**
+As a user, I want the set target to be correctly initialised when I add a new manual exercise during a workout, so I don't see broken or missing target data.
+
+**Acceptance Criteria**
+- **WHEN** the user adds a new manual exercise during an active workout
+- **THEN** the system SHALL correctly set `targetReps`, `targetWeight`, and `targetSets` with sensible defaults.
+- **THEN** each generated set SHALL have its `targetReps` populated.
+- **THEN** the exercise SHALL render without errors on the active workout screen.
+
+---
+
+## Category B — Exercise Management
+
+### R40: Exercise Cues on New Manual Exercise
+**User Story**
+As a user, I want to add cues/notes when creating a new manual exercise, so I can record form tips immediately.
+
+**Acceptance Criteria**
+- **WHEN** the user opens the "Add Manual Exercise" form (in program editor or active workout)
+- **THEN** the system SHALL include a "Notes/Cues" text field.
+- **WHEN** the form is saved
+- **THEN** the `notes` field SHALL be persisted with the exercise template.
+
+### R41: Manual Exercises Added to Global Exercise Library
+**User Story**
+As a user, I want manual exercises I create to be saved to the global exercise list, so I can reuse them across workouts.
+
+**Acceptance Criteria**
+- **WHEN** the user creates a new manual exercise
+- **THEN** the system SHALL save it to the global `exercises` store in IndexedDB (same store used by imported exercises).
+- **WHEN** selecting exercises in the program editor or active workout
+- **THEN** the system SHALL include previously created manual exercises in the searchable list.
+
+### R42: Import Exercises from API Ninjas into Local DB
+**User Story**
+As a developer/admin, I want a one-time import script that fetches exercises from API Ninjas and stores them in the local `exercises` JSON / IndexedDB, so the app has a rich exercise library without runtime API calls.
+
+**Acceptance Criteria**
+- **WHEN** the import script is executed
+- **THEN** it SHALL call `GET https://api.api-ninjas.com/v1/exercises?muscle={muscle}` for each muscle group.
+- **THEN** it SHALL normalise each result to the internal `ExerciseTemplate` format (`name`, `muscle`, `type`, `difficulty`, `instructions`, `safetyTips`, `equipments`).
+- **THEN** it SHALL save the result to `data/exercises.json`, deduplicating by `name + muscle`.
+- **WHEN** the app initialises
+- **THEN** `AppInitializer` SHALL seed the `exercises` IndexedDB store from `data/exercises.json` if the store is empty.
+
+### R43: Browse Existing Exercises by Muscle Category
+**User Story**
+As a user, I want to browse the exercise library organised by muscle group, so I can easily find the right exercise without scrolling through a long flat list.
+
+**Acceptance Criteria**
+- **WHEN** the user opens the "Add Exercise" picker (program editor or active workout)
+- **THEN** the system SHALL display exercises grouped by muscle/body-part category.
+- **THEN** each category SHALL be collapsible/expandable.
+- **WHEN** the user selects an exercise from a category
+- **THEN** the system SHALL auto-fill name, muscle, cues, and default targets.
+
+---
+
+## Category C — Nutrition Improvements
+
+### R44: Fix Nutrition Day UI
+**User Story**
+As a user, I want the nutrition day screen to have a clean, readable layout, so I can log meals comfortably on mobile.
+
+**Acceptance Criteria**
+- **WHEN** the user views the nutrition day screen
+- **THEN** macro summary totals SHALL be clearly visible at the top.
+- **THEN** meal cards SHALL be visually separated with consistent spacing and typography.
+- **THEN** ingredient rows SHALL align values (calories, protein, carbs, fats) in a compact readable format.
+- **THEN** action buttons ("Add Meal", "Finish Day") SHALL be easily tappable on mobile.
+
+### R45: Nutrition Day Targets Snapshot
+**User Story**
+As a user, I want the targets saved with a nutrition day to remain fixed at the time that day was logged, so changing my targets later doesn't retroactively alter my history.
+
+**Acceptance Criteria**
+- **WHEN** a `NutritionLog` is created for a specific date
+- **THEN** the system SHALL snapshot the current nutritional targets (calories, protein, carbs, fats — min/max/critPlus/critMinus) into the log itself.
+- **WHEN** the user later changes their nutritional targets in settings
+- **THEN** existing `NutritionLog` entries SHALL NOT be affected.
+- **WHEN** displaying a historical nutrition day
+- **THEN** the system SHALL evaluate colour-coding against the targets stored in that log's snapshot.
+
+### R46: Delete a Day from Nutrition History
+**User Story**
+As a user, I want to delete a day from my nutrition history, so I can remove incorrect or test entries.
+
+**Acceptance Criteria**
+- **WHEN** viewing the nutrition history list
+- **THEN** each day entry SHALL have a "Delete" button.
+- **WHEN** the user taps "Delete"
+- **THEN** the system SHALL ask for confirmation.
+- **WHEN** confirmed
+- **THEN** the system SHALL permanently remove the `NutritionLog` for that date from IndexedDB.
+- **THEN** the history list SHALL update immediately.
+
+### R47: Full Nutrition Editing (Day, Meal, Ingredient)
+**User Story**
+As a user, I want to edit any part of a logged nutrition day — meals, ingredients, and macro values — and remove items, so my records are always accurate.
+
+**Acceptance Criteria**
+- **WHEN** viewing a nutrition day
+- **THEN** the system SHALL allow editing the day's date/label.
+- **THEN** each meal SHALL have an "Edit" button to modify its name.
+- **THEN** each ingredient row SHALL have an "Edit" button to modify weight, macros, or name.
+- **THEN** each ingredient row SHALL have a "Remove" button.
+- **THEN** each meal SHALL have a "Remove Meal" button (with confirmation).
+- **WHEN** any edit or removal is saved
+- **THEN** the daily totals SHALL recalculate and persist immediately.
+
+---
+
+## Category D — Program Management
+
+### R48: Remove a Day from Program
+**User Story**
+As a user, I want to delete a day from my workout program, so I can restructure my training split without rebuilding from scratch.
+
+**Acceptance Criteria**
+- **WHEN** viewing the program editor
+- **THEN** each day SHALL have a "Delete Day" button.
+- **WHEN** the user taps "Delete Day"
+- **THEN** the system SHALL ask for confirmation.
+- **WHEN** confirmed
+- **THEN** the system SHALL remove the day and all its exercises from the `program` template in IndexedDB.
+- **THEN** the program editor SHALL update immediately.
+- **THEN** existing `WorkoutLog` entries that used this day SHALL NOT be affected (snapshot immutability).
+
+---
+
+## Category E — Bug Fixes
+
+### R49: Fix Login When Offline
+**User Story**
+As a user, I want the app to handle the login screen gracefully when there is no internet connection, so I'm not blocked from using the app offline.
+
+**Acceptance Criteria**
+- **WHEN** the user opens the app without an internet connection
+- **THEN** the system SHALL detect the offline state.
+- **THEN** the system SHALL display a clear message explaining that sign-in requires connectivity.
+- **THEN** the system SHALL offer a "Continue Offline" or "Use Without Sign-in" option.
+- **WHEN** the user chooses to continue offline
+- **THEN** the system SHALL proceed to the main app using locally stored data.
+- **WHEN** connectivity is restored
+- **THEN** the system SHALL offer to sign in and sync.
+
+### R50: Exercise Target Storage in IndexedDB
+**User Story**
+As a user, I want exercise targets (weight, sets, reps) to be stored persistently with the exercise in the DB, so targets survive resets and are available as defaults when reusing an exercise.
+
+**Acceptance Criteria**
+- **WHEN** the user sets a target for an exercise (via program editor or "Set as Target")
+- **THEN** the system SHALL persist `defaultWeight`, `targetSets`, and `targetReps` to the exercise record in the `exercises` IndexedDB store.
+- **WHEN** the user later adds that exercise to a new workout or program day
+- **THEN** the system SHALL pre-fill targets from the stored exercise record.
+
 ## 3. Non-Functional Requirements
 
 ### Performance

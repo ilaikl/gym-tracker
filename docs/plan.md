@@ -237,3 +237,115 @@
 - **UI changes:** Screen-locked "Back" button on Workout Page.
 - **Risks:** Visual interference with other UI elements (like timer).
 - **Dependencies:** PLAN-003.
+
+---
+
+## Category A — Active Workout Improvements
+
+## PLAN-029: Replace Exercise in Active Workout
+**Related Requirements:** R36
+**Priority:** High
+**Description:** Allow the user to replace an exercise in an active workout with a suggested alternative targeting the same muscle group, preserving set structure.
+**Technical Scope:**
+- **Affected modules:** `WorkoutEngine`, `AppUI` (active workout render), `PersistenceService`.
+- **Data model impact:** New `replaceExercise(logId, oldExId, newExTemplate)` method in `WorkoutEngine`; reads `exercises` IndexedDB store to find same-muscle suggestions.
+- **API changes:** `WorkoutEngine.replaceExercise(logId, exerciseId, newExerciseTemplate)`.
+- **UI changes:** "Replace" button on each active workout exercise card; modal with grouped suggestions by muscle.
+- **Risks:** Loss of existing set data if not preserved during swap.
+- **Dependencies:** PLAN-003, PLAN-030 (exercise library).
+
+## PLAN-030: Fix Drag-and-Drop Order Persistence in Active Workout
+**Related Requirements:** R37
+**Priority:** High
+**Description:** Fix the SortableJS `onEnd` callback in the active workout screen so the new exercise order is persisted to IndexedDB.
+**Technical Scope:**
+- **Affected modules:** `AppUI` (active workout SortableJS init), `WorkoutEngine`.
+- **Data model impact:** Correct `displayOrder` update on all `LoggedExercise` entries after drag.
+- **API changes:** Ensure `WorkoutEngine.reorderExercises(logId, orderedIds)` is called from active workout drag handler.
+- **Risks:** Race condition between re-render and drag handler.
+- **Dependencies:** PLAN-018.
+
+## PLAN-031: Fix Per-Set Rep Targets Display
+**Related Requirements:** R38, R39
+**Priority:** High
+**Description:** Fix set target rendering so each set row shows its individual `targetReps`, and fix default target initialisation when adding a manual exercise during a workout.
+**Technical Scope:**
+- **Affected modules:** `AppUI` (renderActiveExercises set row template), `WorkoutEngine` (addExerciseToLog).
+- **Data model impact:** Each `LoggedSet` must carry `targetReps`; `WorkoutEngine.addExerciseToLog` must populate `targetReps` per set from the exercise template.
+- **UI changes:** Set row label shows `target: Xreps` in muted text adjacent to set number.
+- **Risks:** Breaking existing set rendering.
+- **Dependencies:** PLAN-003.
+
+---
+
+## Category B — Exercise Management
+
+## PLAN-032: Exercise Management Improvements
+**Related Requirements:** R40, R41, R42, R43
+**Priority:** High
+**Description:** Add cues field to manual exercise form; persist manual exercises to global `exercises` store; run one-time API Ninjas import script to populate `data/exercises.json`; add categorised exercise browser modal.
+**Technical Scope:**
+- **Affected modules:** `AppInitializer`, `PersistenceService`, `AppUI` (add-exercise modal, program editor), `ExternalApiService` or new `scripts/importExercises.js`.
+- **Data model impact:** `exercises` IndexedDB store gains `source` field (`manual` | `imported`); `notes`/`cues` field included in store schema.
+- **API changes:** New `PersistenceService.saveExercise(exercise)` and `PersistenceService.getExercisesByMuscle(muscle)`; `AppInitializer` seeds from `data/exercises.json`.
+- **UI changes:** "Notes/Cues" textarea in manual exercise form; grouped collapsible category list in exercise picker modal replacing flat datalist.
+- **Infrastructure changes:** `scripts/importExercises.js` — Node script using API Ninjas key, writes `data/exercises.json`.
+- **Risks:** API rate limits during import; large `exercises.json` bundle size.
+- **Dependencies:** PLAN-024, PLAN-010.
+
+---
+
+## Category C — Nutrition Improvements
+
+## PLAN-033: Nutrition Day UI & Data Integrity
+**Related Requirements:** R44, R45, R46, R47
+**Priority:** High
+**Description:** Overhaul the nutrition day UI for mobile readability; snapshot targets at log creation; add delete-day capability; implement full inline editing of meals and ingredients.
+**Technical Scope:**
+- **Affected modules:** `NutritionService`, `AppUI` (nutrition day/history render), `PersistenceService`, `css/style.css`.
+- **Data model impact:** `NutritionLog` gains `targetsSnapshot` field (copied from `settings.nutritionTargets` at creation time); evaluation logic reads from snapshot.
+- **API changes:** `NutritionService.deleteNutritionLog(date)`; `NutritionService.updateIngredient(date, mealId, ingredientId, data)`; `NutritionService.removeIngredient(date, mealId, ingredientId)`; `NutritionService.removeMeal(date, mealId)`.
+- **UI changes:** Redesigned nutrition day card layout; delete button on history rows; inline ingredient edit/remove controls.
+- **Risks:** Recalculation errors if totals are not recomputed after every edit.
+- **Dependencies:** PLAN-011, PLAN-015, PLAN-016.
+
+---
+
+## Category D — Program Management
+
+## PLAN-034: Remove Day from Program
+**Related Requirements:** R48
+**Priority:** Medium
+**Description:** Add a "Delete Day" button to the program editor that removes the day and all its exercises from the program template, without affecting existing workout logs.
+**Technical Scope:**
+- **Affected modules:** `TemplateService`, `AppUI` (program editor render).
+- **API changes:** `TemplateService.deleteDay(dayId)`.
+- **UI changes:** "Delete Day" button (with confirmation) on each program day header in the editor.
+- **Risks:** Accidental deletion; must not touch `WorkoutLog` snapshots.
+- **Dependencies:** PLAN-002.
+
+---
+
+## Category E — Bug Fixes
+
+## PLAN-035: Fix Login When Offline
+**Related Requirements:** R49
+**Priority:** High
+**Description:** Detect offline state on app load; show a user-friendly message on the login screen; provide a "Continue Offline" path that bypasses Google Auth and loads local data.
+**Technical Scope:**
+- **Affected modules:** `AuthService`, `AppUI` (login screen).
+- **API changes:** Check `navigator.onLine` and listen to `offline`/`online` events; `AuthService.continueOffline()`.
+- **UI changes:** Offline banner on login screen; "Continue Offline" button.
+- **Risks:** User may miss sync opportunities; must re-prompt sign-in when back online.
+- **Dependencies:** PLAN-019 (Auth).
+
+## PLAN-036: Exercise Target Storage in DB
+**Related Requirements:** R50
+**Priority:** Medium
+**Description:** Persist `defaultWeight`, `targetSets`, and `targetReps` on the exercise record in the `exercises` IndexedDB store, and pre-fill these when the exercise is added to a program day or workout.
+**Technical Scope:**
+- **Affected modules:** `PersistenceService`, `TemplateService`, `WorkoutEngine`, `AppUI`.
+- **Data model impact:** `exercises` store schema extended with `defaultWeight`, `targetSets`, `targetReps`.
+- **API changes:** `PersistenceService.updateExerciseTargets(exerciseId, targets)`; read targets when building exercise picker auto-fill.
+- **Risks:** Stale targets if user updates program but exercise store is not updated in sync.
+- **Dependencies:** PLAN-032.

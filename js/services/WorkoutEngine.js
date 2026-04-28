@@ -33,6 +33,15 @@ class WorkoutEngine {
     }
 
     /**
+     * Resolves target reps for a specific set.
+     */
+    resolveTargetReps(targetSets, setIndex) {
+        if (!targetSets || targetSets.length === 0) return 0;
+        const target = targetSets[setIndex] || targetSets[targetSets.length - 1];
+        return target.targetReps || target.maxReps || 0;
+    }
+
+    /**
      * Snapshots an exercise template into a logged exercise.
      */
     snapshotExercise(ex) {
@@ -49,9 +58,9 @@ class WorkoutEngine {
                 notes: ex.notes // Keep as string
             },
             // Pre-generate actual sets based on target sets
-            actualSets: ex.targetSets.map(s => ({
+            actualSets: ex.targetSets.map((s, idx) => ({
                 setNumber: s.setNumber,
-                targetReps: s.targetReps || s.maxReps || 0,
+                targetReps: this.resolveTargetReps(ex.targetSets, idx),
                 actualReps: null,
                 targetWeight: ex.defaultWeight.value,
                 actualWeight: ex.defaultWeight.value,
@@ -187,6 +196,38 @@ class WorkoutEngine {
     }
 
     /**
+     * Replaces an exercise in an active WorkoutLog.
+     * Preserves existing sets (count + any logged values).
+     * @param {string} logId
+     * @param {string} oldLoggedExerciseId - LoggedExercise.id to replace
+     * @param {object} newTemplate   - Exercise record from exercises store
+     * @returns {Promise<object>} The updated log
+     */
+    async replaceExercise(logId, oldLoggedExerciseId, newTemplate) {
+        const log = await persistenceService.getById('workoutLogs', logId);
+        if (!log) throw new Error('Workout log not found');
+
+        const idx = log.exercises.findIndex(e => e.id === oldLoggedExerciseId);
+        if (idx === -1) throw new Error('Exercise not found in log');
+
+        const oldLoggedEx = log.exercises[idx];
+
+        // Replace template-related fields but keep session-related fields
+        log.exercises[idx] = {
+            ...oldLoggedEx,
+            templateExerciseId: newTemplate.id,
+            name: newTemplate.name,
+            bodyPartPrimary: newTemplate.bodyPartPrimary || newTemplate.muscle || oldLoggedEx.bodyPartPrimary,
+            bodyPartSecondary: newTemplate.bodyPartSecondary || [],
+            exerciseNotes: newTemplate.notes || newTemplate.safetyTips || ''
+        };
+
+        log.updatedAt = new Date().toISOString();
+        await persistenceService.save('workoutLogs', log);
+        return log;
+    }
+
+    /**
      * Completes a workout log.
      */
     async completeWorkout(logId) {
@@ -271,6 +312,18 @@ class WorkoutEngine {
 
         // 3. Update the template
         await templateService.updateExercise(targetDayId, logExercise.templateExerciseId, newData, syncAcrossDays);
+
+        // Phase 36: Update global library targets too
+        try {
+            const targets = {
+                targetSets: newTargetSets,
+                targetReps: newTargetSets.map(s => s.targetReps),
+                targetWeight: lastWeight
+            };
+            await persistenceService.updateExerciseTargets(logExercise.name, targets);
+        } catch (e) {
+            console.warn('WorkoutEngine: Failed to sync promoted targets to library', e);
+        }
     }
 }
 

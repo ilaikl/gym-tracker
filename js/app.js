@@ -28,8 +28,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const exDatalist = document.getElementById('existing-exercises-list');
             const manualExDatalist = document.getElementById('manual-exercises-list');
-            const response = await fetch('./data/exercises.json');
-            commonExercises = await response.json();
+
+            // Phase 32: Use global library from PersistenceService
+            commonExercises = await persistenceService.getAllExercises();
+
+            // Fallback to fetching if empty (should be seeded by now)
+            if (commonExercises.length === 0) {
+                const response = await fetch('./data/exercises.json');
+                commonExercises = await response.json();
+            }
+
             const options = commonExercises.map(ex => `<option value="${ex.name}">`).join('');
             if (exDatalist) exDatalist.innerHTML = options;
             if (manualExDatalist) manualExDatalist.innerHTML = options;
@@ -48,6 +56,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const loginOverlay = document.getElementById('login-overlay');
         const googleLoginBtn = document.getElementById('google-login-btn');
         const skipLoginBtn = document.getElementById('skip-login-btn');
+        const btnContinueOffline = document.getElementById('btn-continue-offline');
+        const offlineBanner = document.getElementById('offline-banner');
         const userNameSpan = document.getElementById('user-name');
         const loginBtn = document.getElementById('login-btn');
         const logoutBtn = document.getElementById('logout-btn');
@@ -55,16 +65,31 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Check if user has skipped login before (session storage)
         const hasSkipped = sessionStorage.getItem('login-skipped');
 
-        function updateAuthUI(user) {
-            if (user) {
+        function updateAuthUI(user, isOfflineMode = false) {
+            if (user || isOfflineMode) {
                 loginOverlay.style.display = 'none';
-                userNameSpan.textContent = user.displayName || user.email;
+                userNameSpan.textContent = user ? (user.displayName || user.email) : 'Offline Mode';
                 loginBtn.style.display = 'none';
-                logoutBtn.style.display = 'block';
+                logoutBtn.style.display = user ? 'block' : 'none';
             } else {
                 userNameSpan.textContent = '';
                 loginBtn.style.display = 'block';
                 logoutBtn.style.display = 'none';
+
+                if (!authService.isOnline()) {
+                    offlineBanner.style.display = 'block';
+                    googleLoginBtn.disabled = true;
+                    googleLoginBtn.style.opacity = '0.5';
+                    skipLoginBtn.style.display = 'none';
+                    btnContinueOffline.style.display = 'block';
+                } else {
+                    offlineBanner.style.display = 'none';
+                    googleLoginBtn.disabled = false;
+                    googleLoginBtn.style.opacity = '1';
+                    skipLoginBtn.style.display = 'block';
+                    btnContinueOffline.style.display = 'none';
+                }
+
                 if (!hasSkipped) {
                     loginOverlay.style.display = 'flex';
                 }
@@ -72,8 +97,45 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         window.addEventListener('auth-state-changed', (e) => {
-            updateAuthUI(e.detail.user);
+            updateAuthUI(e.detail.user, e.detail.offline);
         });
+
+        btnContinueOffline.onclick = () => {
+            authService.continueOffline();
+        };
+
+        // Watch for connectivity changes
+        window.addEventListener('online', () => {
+            if (authService.isOfflineMode() && !authService.isAuthenticated()) {
+                showOnlineRestoredBanner();
+            }
+            // Update login UI if visible
+            if (loginOverlay.style.display === 'flex') {
+                updateAuthUI(null);
+            }
+        });
+
+        function showOnlineRestoredBanner() {
+            // Check if banner already exists
+            if (document.getElementById('online-restored-banner')) return;
+
+            const banner = document.createElement('div');
+            banner.id = 'online-restored-banner';
+            banner.className = 'online-banner';
+            banner.innerHTML = `
+                <span>🌐 Back online!</span>
+                <button id="btn-sync-now" style="margin-left: 10px; padding: 4px 8px; font-size: 0.8em;">Sign In & Sync</button>
+                <button id="close-online-banner" style="background:none; border:none; margin-left:10px; cursor:pointer;">✕</button>
+            `;
+            document.body.prepend(banner);
+
+            document.getElementById('btn-sync-now').onclick = () => {
+                loginOverlay.style.display = 'flex';
+                updateAuthUI(null);
+                banner.remove();
+            };
+            document.getElementById('close-online-banner').onclick = () => banner.remove();
+        }
 
         googleLoginBtn.onclick = async () => {
             try {
@@ -99,7 +161,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         };
 
         // Initial UI state
-        updateAuthUI(authService.getCurrentUser());
+        updateAuthUI(authService.getCurrentUser(), authService.isOfflineMode());
 
     } catch (error) {
         console.error('App: Failed to initialize app', error);
@@ -219,6 +281,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function renderNutritionHistory() {
         const historyList = document.getElementById('nutrition-history-list');
+        if (!historyList) return;
         historyList.innerHTML = '<p>Loading history...</p>';
 
         const summaries = await nutritionService.getHistorySummaries();
@@ -269,20 +332,32 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <div style="color: ${getStatusColor('carbs')}"><strong>Carb:</strong> ${Math.round(s.totals.carbs)} (${formatTarget(targets.carbs || targets.carb)})g</div>
                     <div style="color: ${getStatusColor('fats')}"><strong>Fat:</strong> ${Math.round(s.totals.fats)} (${formatTarget(targets.fats || targets.fat)})g</div>
                 </div>
-                <div style="margin-top: 10px; display: flex; justify-content: flex-end;">
+                <div style="margin-top: 10px; display: flex; justify-content: flex-end; gap: 10px;">
                     <button class="btn-secondary export-nut-log-btn" data-date="${s.date}" style="font-size: 0.8em; padding: 4px 8px;">Export</button>
+                    <button class="btn-secondary delete-nut-log-btn" data-date="${s.date}" style="font-size: 0.8em; padding: 4px 8px; color: #e74c3c;">Delete</button>
                 </div>
             </div>
         `;}).join('');
 
-            // Add event listeners for Export button in Nutrition History
+            // Add event listeners
             document.querySelectorAll('.export-nut-log-btn').forEach(btn => {
                 btn.onclick = async (e) => {
-                    e.stopPropagation(); // Don't navigate when clicking export
+                    e.stopPropagation();
                     const date = btn.dataset.date;
                     const log = await nutritionService.getLog(date);
                     if (log) {
                         await jsonTransferService.exportNutritionLog(log);
+                    }
+                };
+            });
+
+            document.querySelectorAll('.delete-nut-log-btn').forEach(btn => {
+                btn.onclick = async (e) => {
+                    e.stopPropagation();
+                    const date = btn.dataset.date;
+                    if (confirm(`Are you sure you want to delete the nutrition log for ${date}?`)) {
+                        await nutritionService.deleteLog(date);
+                        await renderNutritionHistory();
                     }
                 };
             });
@@ -390,73 +465,88 @@ document.addEventListener('DOMContentLoaded', async () => {
         const workoutsOnDate = workouts.filter(w => w.date === currentNutritionLog.date && w.status === 'completed');
 
         const isTrainDay = workoutsOnDate.length > 0;
-        const targets = settings.nutritionTargets ?
-            (isTrainDay ? settings.nutritionTargets.trainingDay : settings.nutritionTargets.restDay) : null;
+        const globalTargets = settings.nutritionTargets || {};
+        const targetsSnapshot = currentNutritionLog.targetsSnapshot || globalTargets;
+        const targets = isTrainDay ? targetsSnapshot.trainingDay : targetsSnapshot.restDay;
 
         const dateLabel = document.getElementById('nutrition-date-label');
-        dateLabel.innerText = `${currentNutritionLog.date} (${isTrainDay ? 'Training' : 'Rest'} Day)`;
-
-        totalCaloriesSpan.innerHTML = `<span>${Math.round(totals.calories)}</span>`;
-        totalProteinSpan.innerHTML = `<span>${Math.round(totals.protein)}</span>`;
-        totalCarbsSpan.innerHTML = `<span>${Math.round(totals.carbs)}</span>`;
-        totalFatsSpan.innerHTML = `<span>${Math.round(totals.fats)}</span>`;
-
-        if (targets) {
-            const getStatusColor = (total, target) => {
-                const status = nutritionService.evaluateMacroStatus(total, target);
-                if (status === 'green') return '#27ae60';
-                if (status === 'yellow' || status === 'orange') return '#f39c12';
-                return '#e74c3c';
-            };
-
-            const appendTarget = (span, total, target) => {
-                const statusColor = getStatusColor(total, target);
-                const isRange = target && typeof target === 'object' && target.min !== undefined;
-                const targetDisplay = isRange ? `${target.min}-${target.max}` : target;
-                const targetMax = isRange ? target.max : target;
-
-                const percent = targetMax > 0 ? (total / targetMax) * 100 : 0;
-
-                span.style.color = statusColor;
-                span.innerHTML += ` <small style="color: #666;">/ ${targetDisplay}</small>`;
-                span.innerHTML += `<div style="width: 100%; height: 4px; background: #eee; margin-top: 4px; border-radius: 2px;">
-                    <div style="width: ${Math.min(percent, 100)}%; height: 100%; background: ${statusColor}; border-radius: 2px;"></div>
-                </div>`;
-            };
-
-            appendTarget(totalCaloriesSpan, totals.calories, targets.calories);
-            appendTarget(totalProteinSpan, totals.protein, targets.protein);
-            appendTarget(totalCarbsSpan, totals.carbs, targets.carbs);
-            appendTarget(totalFatsSpan, totals.fats, targets.fats);
+        if (dateLabel) {
+            dateLabel.innerText = `${currentNutritionLog.date} (${isTrainDay ? 'Training' : 'Rest'} Day)`;
         }
+
+        const summaryCard = document.getElementById('nutrition-summary-card');
+        if (!summaryCard) return;
+
+        summaryCard.className = 'nutrition-summary-card';
+        summaryCard.innerHTML = '';
+
+        const macros = [
+            { label: 'Calories', key: 'calories', unit: '', total: totals.calories, target: targets?.calories },
+            { label: 'Protein', key: 'protein', unit: 'g', total: totals.protein, target: targets?.protein },
+            { label: 'Carbs', key: 'carbs', unit: 'g', total: totals.carbs, target: targets?.carbs },
+            { label: 'Fats', key: 'fats', unit: 'g', total: totals.fats, target: targets?.fats }
+        ];
+
+        macros.forEach(m => {
+            const status = nutritionService.evaluateMacroStatus(m.total, m.target);
+            let color = '#e74c3c'; // red
+            if (status === 'green') color = '#27ae60';
+            if (status === 'yellow' || status === 'orange') color = '#f39c12';
+
+            const isRange = m.target && typeof m.target === 'object' && m.target.min !== undefined;
+            const targetDisplay = isRange ? `${m.target.min}-${m.target.max}${m.unit}` : (m.target ? `${m.target}${m.unit}` : '-');
+            const targetMax = isRange ? m.target.max : (m.target || 0);
+            const percent = targetMax > 0 ? (m.total / targetMax) * 100 : 0;
+
+            const statDiv = document.createElement('div');
+            statDiv.className = 'macro-stat';
+            statDiv.innerHTML = `
+                <strong>${m.label}</strong>
+                <span class="value" style="color: ${color}">${Math.round(m.total)}${m.unit}</span>
+                <span class="target">/ ${targetDisplay}</span>
+                <div class="macro-progress-bar">
+                    <div class="macro-progress-fill" style="width: ${Math.min(percent, 100)}%; background: ${color}"></div>
+                </div>
+            `;
+            summaryCard.appendChild(statDiv);
+        });
     }
 
     function renderMeals() {
+        if (!mealsList) return;
         mealsList.innerHTML = '';
         currentNutritionLog.meals.forEach(meal => {
             const totals = nutritionService.calculateMealTotals(meal);
-            const mealDiv = document.createElement('div');
-            mealDiv.className = 'meal-card';
-            mealDiv.innerHTML = `
-                <div class="meal-header">
+            const mealCard = document.createElement('div');
+            mealCard.className = 'meal-card';
+            mealCard.innerHTML = `
+                <div class="meal-card-header">
                     <h4>${meal.name}</h4>
-                    <div style="display: flex; align-items: center; gap: 5px;">
-                        <small>${Math.round(totals.calories)} kcal | P: ${Math.round(totals.protein)}g</small>
-                        <button class="add-ing-to-meal-btn" data-meal-id="${meal.id}" style="font-size: 0.8em; padding: 2px 6px;">+ Add</button>
-                        <button class="edit-meal-btn" data-meal-id="${meal.id}" style="font-size: 0.8em; padding: 2px 6px;">Edit</button>
-                        <button class="remove-meal-btn" data-meal-id="${meal.id}" style="color:red; background:none; border:none; padding: 2px 6px;">✕</button>
+                    <div class="meal-header-actions">
+                        <small style="color: #666; margin-right: 5px;">${Math.round(totals.calories)} kcal</small>
+                        <button class="btn-icon edit-meal-name-btn" data-meal-id="${meal.id}" title="Edit Name">✏️</button>
+                        <button class="btn-icon delete remove-meal-btn" data-meal-id="${meal.id}" title="Remove Meal">✕</button>
                     </div>
                 </div>
                 <div class="ingredients-list">
                     ${meal.ingredients.map(ing => `
-                        <div class="ingredient-item">
-                            <span>${ing.name} (${ing.weight}g)</span>
-                            <span class="ingredient-macros">${Math.round(ing.calories)} cal | P: ${Math.round(ing.protein)}g</span>
+                        <div class="ingredient-row">
+                            <div class="ingredient-info">
+                                <span class="ingredient-name">${ing.name}</span>
+                                <span class="ingredient-details">${ing.weight}g | ${Math.round(ing.calories)} cal | P: ${Math.round(ing.protein)}g | C: ${Math.round(ing.carbs)}g | F: ${Math.round(ing.fats)}g</span>
+                            </div>
+                            <div class="ingredient-actions">
+                                <button class="btn-icon edit edit-ing-btn" data-meal-id="${meal.id}" data-ing-name="${ing.name}" title="Edit Weight">✏️</button>
+                                <button class="btn-icon delete remove-ing-btn" data-meal-id="${meal.id}" data-ing-name="${ing.name}" title="Remove">✕</button>
+                            </div>
                         </div>
                     `).join('')}
                 </div>
+                <div class="meal-card-footer">
+                    <button class="add-ingredient-btn add-ing-to-meal-btn" data-meal-id="${meal.id}">+ Add Ingredient</button>
+                </div>
             `;
-            mealsList.appendChild(mealDiv);
+            mealsList.appendChild(mealCard);
         });
 
         // Add Meal Event Listeners
@@ -467,22 +557,48 @@ document.addEventListener('DOMContentLoaded', async () => {
             };
         });
 
-        document.querySelectorAll('.edit-meal-btn').forEach(btn => {
-            btn.onclick = () => {
+        document.querySelectorAll('.edit-meal-name-btn').forEach(btn => {
+            btn.onclick = async () => {
                 const mealId = btn.dataset.mealId;
                 const meal = currentNutritionLog.meals.find(m => m.id === mealId);
-                if (meal) {
-                    currentEditingMealId = mealId;
-                    showMealEditor(meal);
+                const newName = prompt('Enter new meal name:', meal.name);
+                if (newName && newName.trim()) {
+                    await nutritionService.updateMealName(currentNutritionLog, mealId, newName.trim());
+                    renderMeals();
                 }
             };
         });
 
         document.querySelectorAll('.remove-meal-btn').forEach(btn => {
             btn.onclick = async () => {
-                if (confirm('Remove this meal?')) {
-                    nutritionService.removeMeal(currentNutritionLog, btn.dataset.mealId);
-                    await nutritionService.saveLog(currentNutritionLog);
+                if (confirm('Remove this entire meal?')) {
+                    await nutritionService.removeMeal(currentNutritionLog, btn.dataset.mealId);
+                    renderMeals();
+                    updateNutritionSummary();
+                }
+            };
+        });
+
+        document.querySelectorAll('.edit-ing-btn').forEach(btn => {
+            btn.onclick = async () => {
+                const mealId = btn.dataset.mealId;
+                const ingName = btn.dataset.ingName;
+                const meal = currentNutritionLog.meals.find(m => m.id === mealId);
+                const ing = meal.ingredients.find(i => i.name === ingName);
+
+                const newWeight = prompt(`Update weight for ${ingName} (g):`, ing.weight);
+                if (newWeight && !isNaN(parseFloat(newWeight))) {
+                    await nutritionService.updateIngredient(currentNutritionLog, mealId, ingName, parseFloat(newWeight));
+                    renderMeals();
+                    updateNutritionSummary();
+                }
+            };
+        });
+
+        document.querySelectorAll('.remove-ing-btn').forEach(btn => {
+            btn.onclick = async () => {
+                if (confirm(`Remove ${btn.dataset.ingName} from this meal?`)) {
+                    await nutritionService.removeIngredient(currentNutritionLog, btn.dataset.mealId, btn.dataset.ingName);
                     renderMeals();
                     updateNutritionSummary();
                 }
@@ -672,19 +788,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             fatsPer100g: fat100 || 0
         };
 
-        if (currentSelectedMealId === 'temporary') {
-            const macros = ingredientService.calculateMacros(ingredientData, weight);
-            temporaryEditingMeal.ingredients.push({
-                id: ingredientData.id,
-                name: ingredientData.name,
-                weight: weight,
-                ...macros
-            });
-            renderEditMealIngredients();
-        } else {
-            await nutritionService.addIngredientToMeal(currentNutritionLog, currentSelectedMealId, ingredientData, weight);
-            await nutritionService.saveLog(currentNutritionLog);
-        }
+        await nutritionService.addIngredientToMeal(currentNutritionLog, currentSelectedMealId, ingredientData, weight);
+        await nutritionService.saveLog(currentNutritionLog);
 
         ingredientModal.style.display = 'none';
         renderMeals();
@@ -927,6 +1032,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     const existingExSelect = document.getElementById('existing-ex-select');
     const addExistingExConfirm = document.getElementById('add-existing-ex-confirm');
     const addManualExConfirm = document.getElementById('add-manual-ex-confirm');
+
+    // Replace Exercise Modal UI
+    const replaceExModal = document.getElementById('replace-ex-modal');
+    const closeReplaceModalBtn = document.getElementById('close-replace-modal');
+    const replaceExInfo = document.getElementById('replace-ex-info');
+    const replaceLibraryList = document.getElementById('replace-library-list');
+    const replaceDatabaseList = document.getElementById('replace-database-list');
+    const replaceLibrarySection = document.getElementById('replace-library-section');
+    const replaceDatabaseSection = document.getElementById('replace-database-section');
 
     // Progression UI Elements (Inline)
     function createInlineHistoryUI(container, exerciseId, buttonContainer = null) {
@@ -1317,9 +1431,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             dayEl.style.margin = '5px 0';
 
             dayEl.innerHTML = `
-                <h4>${day.name} (${day.type})</h4>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h4 style="margin: 0;">${day.name} (${day.type})</h4>
+                    <button class="delete-day-btn btn-danger btn-sm" data-day-id="${day.id}" title="Delete Day">🗑</button>
+                </div>
                 <div class="exercises-list" data-day-id="${day.id}"></div>
-                <div class="add-ex-section">
+                <div class="add-ex-section" style="margin-top: 10px;">
                     <button class="add-ex-btn" data-day-id="${day.id}">Add Exercise</button>
                     <div class="inline-add-editor-container" data-day-id="${day.id}" style="margin-top: 10px;"></div>
                 </div>
@@ -1407,6 +1524,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
 
+        document.querySelectorAll('.delete-day-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const dayId = e.target.dataset.dayId;
+                const program = await templateService.getProgram();
+                const day = program.days.find(d => d.id === dayId);
+                const dayName = day ? day.name : 'this day';
+
+                if (confirm(`Delete day "${dayName}"? This will also delete all exercises in this day. This cannot be undone.`)) {
+                    await templateService.deleteDay(dayId);
+                    await renderProgram();
+                }
+            });
+        });
+
         // Initialize Sortable for each day's exercise list
         document.querySelectorAll('.exercises-list').forEach(listEl => {
             new Sortable(listEl, {
@@ -1447,24 +1578,142 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    exNameInput.addEventListener('change', () => {
-        const name = exNameInput.value.trim();
-        const commonEx = window.commonExercisesList?.find(ex => ex.name === name);
-        if (commonEx) {
-            exBodyPartInput.value = commonEx.bodyPart;
-            exNotesInput.value = commonEx.cues;
-        }
-    });
+    // Exercise Picker Logic
+    const pickerModal = document.getElementById('exercise-picker-modal');
+    const pickerSearch = document.getElementById('picker-search');
+    const pickerCategories = document.getElementById('picker-categories');
+    const closePickerModalBtn = document.getElementById('close-picker-modal');
+    let currentPickerCallback = null;
+
+    async function openExercisePicker(callback) {
+        currentPickerCallback = callback;
+        pickerModal.style.display = 'block';
+        pickerSearch.value = '';
+        await renderPickerCategories();
+    }
+
+    async function renderPickerCategories(filter = '') {
+        const exercises = await persistenceService.getAllExercises();
+        const grouped = {};
+
+        exercises.forEach(ex => {
+            const muscle = ex.muscle || 'Other';
+            if (!grouped[muscle]) grouped[muscle] = [];
+
+            if (!filter || ex.name.toLowerCase().includes(filter.toLowerCase())) {
+                grouped[muscle].push(ex);
+            }
+        });
+
+        pickerCategories.innerHTML = '';
+
+        // Sort muscle groups: "My Exercises" first, then alphabetical
+        const muscles = Object.keys(grouped).sort((a, b) => {
+            if (a === 'Manual') return -1;
+            if (b === 'Manual') return 1;
+            return a.localeCompare(b);
+        });
+
+        muscles.forEach(muscle => {
+            if (grouped[muscle].length === 0) return;
+
+            const catDiv = document.createElement('div');
+            catDiv.className = 'picker-category';
+
+            const catHeader = document.createElement('div');
+            catHeader.className = 'picker-category-header';
+            catHeader.innerHTML = `<span>${muscle} (${grouped[muscle].length})</span><span class="toggle-icon">▼</span>`;
+            catHeader.onclick = () => {
+                const list = catDiv.querySelector('.picker-exercise-list');
+                const icon = catHeader.querySelector('.toggle-icon');
+                if (list.style.display === 'none') {
+                    list.style.display = 'block';
+                    icon.innerText = '▲';
+                } else {
+                    list.style.display = 'none';
+                    icon.innerText = '▼';
+                }
+            };
+
+            const exList = document.createElement('div');
+            exList.className = 'picker-exercise-list';
+            exList.style.display = filter ? 'block' : 'none'; // Auto-expand if searching
+
+            grouped[muscle].forEach(ex => {
+                const exItem = document.createElement('div');
+                exItem.className = 'picker-exercise-item';
+                exItem.innerHTML = `
+                    <div class="ex-name">${ex.name}</div>
+                    <div class="ex-info">${ex.equipment || ''} ${ex.difficulty || ''}</div>
+                `;
+                exItem.onclick = () => {
+                    currentPickerCallback(ex);
+                    pickerModal.style.display = 'none';
+                };
+                exList.appendChild(exItem);
+            });
+
+            catDiv.appendChild(catHeader);
+            catDiv.appendChild(exList);
+            pickerCategories.appendChild(catDiv);
+        });
+    }
+
+    pickerSearch.oninput = () => renderPickerCategories(pickerSearch.value);
+    closePickerModalBtn.onclick = () => pickerModal.style.display = 'none';
+
+    // Hook up pickers to existing forms
+    exNameInput.onclick = () => {
+        openExercisePicker((ex) => {
+            exNameInput.value = ex.name;
+            exBodyPartInput.value = ex.muscle || ex.bodyPartPrimary || '';
+            exNotesInput.value = ex.notes || ex.instructions || '';
+
+            // Phase 36: Pre-fill targets from global library
+            if (ex.targetWeight !== undefined) {
+                exTargetWeightInput.value = ex.targetWeight;
+            } else if (ex.defaultWeight) {
+                exTargetWeightInput.value = ex.defaultWeight.value;
+                exTargetUnitInput.value = ex.defaultWeight.unit;
+            }
+
+            if (ex.targetSets && Array.isArray(ex.targetSets)) {
+                exTargetSetsInput.value = ex.targetSets.map(s => s.targetReps || 0).join(', ');
+            } else if (ex.targetReps && Array.isArray(ex.targetReps)) {
+                exTargetSetsInput.value = ex.targetReps.join(', ');
+            }
+        });
+    };
 
     const manualExNameInput = document.getElementById('manual-ex-name');
     const manualExBodyPartInput = document.getElementById('manual-ex-bodypart');
-    manualExNameInput.addEventListener('change', () => {
-        const name = manualExNameInput.value.trim();
-        const commonEx = window.commonExercisesList?.find(ex => ex.name === name);
-        if (commonEx) {
-            manualExBodyPartInput.value = commonEx.bodyPart;
-        }
-    });
+    const manualExSetsInput = document.getElementById('manual-ex-sets');
+    const manualExRepsInput = document.getElementById('manual-ex-reps');
+    const manualExWeightInput = document.getElementById('manual-ex-weight');
+    const manualExNotesInput = document.getElementById('manual-ex-notes');
+
+    manualExNameInput.onclick = () => {
+        openExercisePicker((ex) => {
+            manualExNameInput.value = ex.name;
+            manualExBodyPartInput.value = ex.muscle || ex.bodyPartPrimary || '';
+            manualExNotesInput.value = ex.notes || ex.instructions || '';
+
+            // Phase 36: Pre-fill targets from global library
+            if (ex.targetWeight !== undefined) {
+                manualExWeightInput.value = ex.targetWeight;
+            } else if (ex.defaultWeight) {
+                manualExWeightInput.value = ex.defaultWeight.value;
+            }
+
+            if (ex.targetSets && ex.targetSets.length > 0) {
+                manualExSetsInput.value = ex.targetSets.length;
+                manualExRepsInput.value = ex.targetSets[0].targetReps || 0;
+            } else if (ex.targetReps && Array.isArray(ex.targetReps) && ex.targetReps.length > 0) {
+                manualExSetsInput.value = ex.targetReps.length;
+                manualExRepsInput.value = ex.targetReps[0];
+            }
+        });
+    };
 
     saveExBtn.addEventListener('click', async () => {
         const name = exNameInput.value.trim();
@@ -1605,7 +1854,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="logged-sets-list" style="margin-bottom: 15px; border-top: 1px solid #eee; padding-top: 10px;">
                     ${ex.actualSets.map((set, idx) => `
                         <div class="set-row" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 0;">
-                            <div style="font-weight: bold; color: #555;">Set ${set.setNumber}</div>
+                            <div style="font-weight: bold; color: #555;">Set ${set.setNumber} <span class="set-target-label">×${set.targetReps || 0}</span></div>
                             <div style="display: flex; gap: 10px;">
                                 <input type="number" class="actual-weight" data-ex-id="${ex.id}" data-set-idx="${idx}" value="${set.actualWeight}" placeholder="kg" style="width: 70px; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                                 <input type="number" class="actual-reps" data-ex-id="${ex.id}" data-set-idx="${idx}" value="${set.actualReps || ''}" placeholder="reps" style="width: 70px; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
@@ -1615,9 +1864,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </div>
 
                 <div class="card-actions horizontal-actions" style="display: flex !important; flex-direction: row !important; flex-wrap: wrap !important; gap: 10px !important; width: 100% !important;">
-                    <button class="add-set-btn" data-ex-id="${ex.id}" style="flex: 1 1 0% !important; min-width: 80px !important; margin: 0 !important; width: auto !important;">+ Add Set</button>
-                    <button class="remove-set-btn" data-ex-id="${ex.id}" style="flex: 1 1 0% !important; min-width: 80px !important; margin: 0 !important; width: auto !important;">- Remove Set</button>
-                    <button class="promote-target-btn" data-ex-id="${ex.id}" style="flex: 1 1 0% !important; min-width: 80px !important; margin: 0 !important; width: auto !important;">Set as Target</button>
+                    <button class="add-set-btn" data-ex-id="${ex.id}" style="flex: 1 1 0% !important; min-width: 80px !important; margin: 0 !important; width: auto !important;">+ Set</button>
+                    <button class="remove-set-btn" data-ex-id="${ex.id}" style="flex: 1 1 0% !important; min-width: 80px !important; margin: 0 !important; width: auto !important;">- Set</button>
+                    <button class="replace-exercise-btn" data-ex-id="${ex.id}" style="flex: 1 1 0% !important; min-width: 80px !important; margin: 0 !important; width: auto !important;">Replace</button>
+                    <button class="promote-target-btn" data-ex-id="${ex.id}" style="flex: 1 1 0% !important; min-width: 80px !important; margin: 0 !important; width: auto !important;">Promote</button>
                 </div>
 
                 <div class="active-history-fullwidth" data-ex-id="${ex.templateExerciseId}" style="width: 100%;">
@@ -1690,6 +1940,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                     if (isEditingHistory) historyViewLog = updatedLog;
                     else currentActiveLog = updatedLog;
                     renderActiveExercises(updatedLog);
+                }
+            }));
+        });
+
+        // Attach replace exercise listener
+        document.querySelectorAll('.replace-exercise-btn').forEach(btn => {
+            btn.addEventListener('click', withActiveLog(async (e) => {
+                const exId = e.target.dataset.exId;
+                const log = isEditingHistory ? historyViewLog : currentActiveLog;
+                const loggedEx = log.exercises.find(ex => ex.id === exId);
+                if (loggedEx) {
+                    openReplaceModal(log.id, loggedEx);
                 }
             }));
         });
@@ -1792,18 +2054,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderActiveExercises(updatedLog);
     }));
 
-    addManualExConfirm.addEventListener('click', withActiveLog(async () => {
+        addManualExConfirm.addEventListener('click', withActiveLog(async () => {
         const name = document.getElementById('manual-ex-name').value;
         const bodyPart = document.getElementById('manual-ex-bodypart').value;
-        const setsCount = parseInt(document.getElementById('manual-ex-sets').value);
-        const reps = parseInt(document.getElementById('manual-ex-reps').value);
-        const weight = parseFloat(document.getElementById('manual-ex-weight').value);
+        const setsCount = parseInt(document.getElementById('manual-ex-sets').value) || 3;
+        const reps = parseInt(document.getElementById('manual-ex-reps').value) || 10;
+        const weight = parseFloat(document.getElementById('manual-ex-weight').value) || 0;
+        const notes = document.getElementById('manual-ex-notes').value || '';
 
         if (!name) return alert('Exercise name is required');
 
-        const sets = [];
+        const targetSets = [];
         for (let i = 1; i <= setsCount; i++) {
-            sets.push({ setNumber: i, targetReps: reps });
+            targetSets.push({ setNumber: i, targetReps: reps });
         }
 
         const manualExTemplate = {
@@ -1811,11 +2074,23 @@ document.addEventListener('DOMContentLoaded', async () => {
             name,
             bodyPartPrimary: bodyPart,
             bodyPartSecondary: [],
-            targetSets: sets,
+            targetSets: targetSets,
             repGoalType: 'fixed',
             defaultWeight: { value: weight, unit: 'kg', label: '' },
-            notes: []
+            notes: notes,
+            source: 'manual'
         };
+
+        // Phase 32: Save to global exercises library for future use
+        try {
+            await persistenceService.saveExercise(manualExTemplate);
+            // Update the global list used by other pickers
+            if (window.commonExercisesList) {
+                window.commonExercisesList.push(manualExTemplate);
+            }
+        } catch (err) {
+            console.error('Error saving manual exercise to library:', err);
+        }
 
         const log = isEditingHistory ? historyViewLog : currentActiveLog;
         const updatedLog = await workoutEngine.addExtraExercise(log.id, manualExTemplate);
@@ -1824,6 +2099,69 @@ document.addEventListener('DOMContentLoaded', async () => {
         addExModal.style.display = 'none';
         renderActiveExercises(updatedLog);
     }));
+
+    // --- Replace Exercise Modal Logic ---
+    async function openReplaceModal(logId, loggedEx) {
+        replaceExInfo.innerText = `Replace: ${loggedEx.name}\nMuscle: ${loggedEx.bodyPartPrimary}`;
+        replaceLibraryList.innerHTML = '<p style="padding: 10px;">Loading...</p>';
+        replaceDatabaseList.innerHTML = '';
+        replaceExModal.style.display = 'block';
+
+        try {
+            const sameMuscle = await persistenceService.getExercisesByMuscle(loggedEx.bodyPartPrimary);
+            const suggestions = sameMuscle.filter(ex => ex.id !== loggedEx.templateExerciseId);
+
+            // Separate Library (from programs) and Database (rest)
+            const program = await templateService.getProgram();
+            const libraryIds = new Set();
+            program.days.forEach(day => day.exercises.forEach(ex => libraryIds.add(ex.id)));
+
+            const library = suggestions.filter(ex => libraryIds.has(ex.id));
+            const database = suggestions.filter(ex => !libraryIds.has(ex.id));
+
+            renderReplacementList(replaceLibraryList, library, logId, loggedEx.id);
+            renderReplacementList(replaceDatabaseList, database, logId, loggedEx.id);
+
+            replaceLibrarySection.style.display = library.length > 0 ? 'block' : 'none';
+            replaceDatabaseSection.style.display = database.length > 0 ? 'block' : 'none';
+
+            if (suggestions.length === 0) {
+                replaceLibraryList.innerHTML = '<p style="padding: 10px; color: #888;">No similar exercises found.</p>';
+            }
+        } catch (err) {
+            console.error('Error loading replacement suggestions:', err);
+            replaceLibraryList.innerHTML = '<p style="color: red; padding: 10px;">Error loading suggestions.</p>';
+        }
+    }
+
+    function renderReplacementList(container, list, logId, oldLoggedExId) {
+        container.innerHTML = '';
+        list.forEach(ex => {
+            const btn = document.createElement('button');
+            btn.className = 'replacement-item-btn';
+            btn.style.width = '100%';
+            btn.style.textAlign = 'left';
+            btn.style.padding = '10px';
+            btn.style.marginBottom = '5px';
+            btn.style.background = '#f0f0f0';
+            btn.style.border = '1px solid #ddd';
+            btn.style.borderRadius = '4px';
+            btn.style.cursor = 'pointer';
+            btn.innerText = ex.name;
+            btn.onclick = async () => {
+                const updatedLog = await workoutEngine.replaceExercise(logId, oldLoggedExId, ex);
+                if (isEditingHistory) historyViewLog = updatedLog;
+                else currentActiveLog = updatedLog;
+                renderActiveExercises(updatedLog);
+                replaceExModal.style.display = 'none';
+            };
+            container.appendChild(btn);
+        });
+    }
+
+    closeReplaceModalBtn.onclick = () => {
+        replaceExModal.style.display = 'none';
+    };
 
     completeWorkoutBtn.addEventListener('click', withActiveLog(async () => {
         if (confirm('Complete workout?')) {

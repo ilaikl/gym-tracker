@@ -306,3 +306,141 @@
 
 ## Phase 28 — UI Restoration
 - [x] Restore missing Nutrition Targets UI in `index.html` Data section
+
+---
+
+## Category A — Active Workout Improvements
+
+## Phase 29 — Replace Exercise in Active Workout
+- [x] Add `getExercisesByMuscle(muscle)` to `PersistenceService`
+  (PLAN-029 | R36 | LLD-029)
+- [x] Add `replaceExercise(logId, oldExerciseId, newTemplate)` to `WorkoutEngine`
+  (PLAN-029 | R36 | LLD-029)
+- [x] Add "Replace" button to active workout exercise card in `app.js`
+  (PLAN-029 | R36 | LLD-029)
+- [x] Implement replacement suggestion modal (grouped by library / database) in `app.js`
+  (PLAN-029 | R36 | LLD-029)
+- [x] Apply modal styles in `css/style.css`
+  (PLAN-029 | R36 | LLD-029)
+- [x] Verify set preservation and persistence after replacement
+  (PLAN-029 | R36 | LLD-029)
+
+## Phase 30 — Fix Drag-and-Drop Order Persistence in Active Workout
+- [x] Locate active workout SortableJS initialisation in `app.js`
+  (PLAN-030 | R37 | LLD-030)
+- [x] Add/fix `onEnd` callback to call `workoutEngine.reorderExercises(logId, orderedIds)`
+  (PLAN-030 | R37 | LLD-030)
+- [x] Verify new order persists to IndexedDB and survives page reload
+  (PLAN-030 | R37 | LLD-030)
+
+## Phase 31 — Fix Per-Set Rep Targets & Manual Exercise Defaults
+- [x] Add `resolveTargetReps(targetReps, setIndex)` helper to `WorkoutEngine`
+  (PLAN-031 | R38 | LLD-031)
+- [x] Update set generation in `WorkoutEngine` (snapshot + `addExerciseToLog`) to populate `targetReps` per set
+  (PLAN-031 | R38 | LLD-031)
+- [x] Fix manual exercise defaults (`targetReps`, `targetSets`, `targetWeight`) in `app.js` add-exercise handler
+  (PLAN-031 | R39 | LLD-031)
+- [x] Add per-set target label (`×N`) to set row template in `app.js`
+  (PLAN-031 | R38 | LLD-031)
+- [x] Add `.set-target-label` styling in `css/style.css`
+  (PLAN-031 | R38 | LLD-031)
+- [x] Verify per-set targets display correctly for fixed, array, and default cases
+  (PLAN-031 | R38, R39 | LLD-031)
+
+---
+
+## Category B — Exercise Management
+
+## Phase 32 — Exercise Management Improvements
+- [x] Add `saveExercise(exercise)`, `bulkSaveExercises(exercises)`, `getExercisesByMuscle(muscle)`, `getAllExercises()`, `countExercises()` to `PersistenceService`
+  (PLAN-032 | R40, R41, R42, R43 | LLD-032)
+- [x] Create `scripts/importExercises.js` (Node.js one-time API Ninjas import script)
+  (PLAN-032 | R42 | LLD-032)
+- [x] Run import script and commit resulting `data/exercises.json`
+  (PLAN-032 | R42 | LLD-032)
+- [x] Update `AppInitializer` to seed `exercises` store from `data/exercises.json` if empty
+  (PLAN-032 | R42 | LLD-032)
+- [x] Add "Notes/Cues" textarea to manual exercise form in `index.html` / `app.js`
+  (PLAN-032 | R40 | LLD-032)
+- [x] Update manual exercise save handler to call `PersistenceService.saveExercise` and include `notes` field
+  (PLAN-032 | R40, R41 | LLD-032)
+- [x] Implement categorised exercise picker modal (grouped by muscle, collapsible, search) in `app.js`
+  (PLAN-032 | R43 | LLD-032)
+- [x] Replace existing flat datalist with new picker modal in program editor and active workout
+  (PLAN-032 | R43 | LLD-032)
+- [x] Apply picker modal styles in `css/style.css`
+  (PLAN-032 | R43 | LLD-032)
+- [x] Verify manual exercise appears in "My Exercises" picker section and is reusable
+  (PLAN-032 | R40, R41, R43 | LLD-032)
+
+---
+
+## Category C — Nutrition Improvements
+
+## Phase 33 — Nutrition Day UI & Data Integrity
+- [x] Update `NutritionService.createDailyLog` to snapshot `settings.nutritionTargets` into `log.targetsSnapshot`
+  (PLAN-033 | R45 | LLD-033)
+- [x] Update `NutritionService.evaluateStatus` to prefer `log.targetsSnapshot` over current settings
+  (PLAN-033 | R45 | LLD-033)
+- [x] Add `deleteNutritionLog(date)` to `NutritionService` and wire delete button in history UI
+  (PLAN-033 | R46 | LLD-033)
+- [x] Add `updateIngredient`, `removeIngredient`, `updateMealName`, `removeMeal` to `NutritionService`
+  (PLAN-033 | R47 | LLD-033)
+- [x] Add ingredient edit (✏) and remove (✕) buttons to ingredient rows in `app.js`
+  (PLAN-033 | R47 | LLD-033)
+- [x] Add meal name edit and remove meal buttons to meal card header in `app.js`
+  (PLAN-033 | R47 | LLD-033)
+- [x] Redesign nutrition day screen layout (macro summary card, meal cards, ingredient rows) in `app.js` + `css/style.css`
+  (PLAN-033 | R44 | LLD-033)
+- [x] Add delete button (🗑) to each nutrition history row with confirmation
+  (PLAN-033 | R46 | LLD-033)
+- [x] Verify targets snapshot immutability, delete, and all edit/remove flows with recalculated totals
+  (PLAN-033 | R44, R45, R46, R47 | LLD-033)
+
+---
+
+## Category D — Program Management
+
+## Phase 34 — Remove Day from Program
+- [x] Add `deleteDay(dayId)` to `TemplateService`
+  (PLAN-034 | R48 | LLD-034)
+- [x] Add "Delete Day" button (🗑) to each program day header in `app.js`
+  (PLAN-034 | R48 | LLD-034)
+- [x] Implement confirmation and delete handler in `app.js`
+  (PLAN-034 | R48 | LLD-034)
+- [x] Verify deleted day is removed from editor and remaining days are unaffected
+  (PLAN-034 | R48 | LLD-034)
+- [x] Verify existing `WorkoutLog` snapshots referencing the deleted day are unaffected
+  (PLAN-034 | R48 | LLD-034)
+
+---
+
+## Category E — Bug Fixes
+
+## Phase 35 — Fix Login When Offline
+- [x] Add `isOnline()`, `continueOffline()`, `isOfflineMode()` to `AuthService`
+  (PLAN-035 | R49 | LLD-035)
+- [x] Update `AuthService.init()` to skip Firebase Auth when offline
+  (PLAN-035 | R49 | LLD-035)
+- [x] Render offline banner and "Continue Offline" button on login screen in `app.js`
+  (PLAN-035 | R49 | LLD-035)
+- [x] Disable / grey out "Sign in with Google" button when offline
+  (PLAN-035 | R49 | LLD-035)
+- [x] Add `window.addEventListener('online', ...)` to show "Back online" banner in `app.js`
+  (PLAN-035 | R49 | LLD-035)
+- [x] Apply offline banner CSS in `css/style.css`
+  (PLAN-035 | R49 | LLD-035)
+- [x] Verify offline → Continue Offline → app loads; online restore banner shown
+  (PLAN-035 | R49 | LLD-035)
+
+## Phase 36 — Exercise Target Storage in DB
+- [x] Add `updateExerciseTargets(exerciseId, targets)` and `getExercise(exerciseId)` to `PersistenceService`
+  (PLAN-036 | R50 | LLD-036)
+- [x] Update `TemplateService.updateExercise` to call `updateExerciseTargets` on save
+  (PLAN-036 | R50 | LLD-036)
+- [x] Update `WorkoutEngine.promoteToTarget` to call `updateExerciseTargets` after program update
+  (PLAN-036 | R50 | LLD-036)
+- [x] Update exercise picker selection handler in `app.js` to pre-fill targets from stored exercise record
+  (PLAN-036 | R50 | LLD-036)
+- [x] Verify targets persist to exercises store and pre-fill correctly when re-adding the exercise
+  (PLAN-036 | R50 | LLD-036)

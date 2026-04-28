@@ -711,6 +711,13 @@ select {
         width: auto !important;
     }
 
+.set-target-label {
+    font-size: 0.75rem;
+    color: #888;
+    margin-left: 4px;
+    font-weight: normal;
+}
+
 .program-ex-card .card-actions {
     flex-direction: column;
 }
@@ -798,6 +805,50 @@ select {
 .inline-history-container {
     width: 100% !important;
     box-sizing: border-box;
+}
+
+/* Auth & Connectivity */
+.offline-banner {
+    background: #fff3cd;
+    color: #856404;
+    padding: 10px 14px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    border: 1px solid #ffeeba;
+}
+
+.online-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: #d4edda;
+    color: #155724;
+    padding: 10px;
+    text-align: center;
+    z-index: 3000;
+    border-bottom: 1px solid #c3e6cb;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.btn-offline {
+    width: 100%;
+    margin-top: 15px;
+    background: #f8f9fa;
+    border: 1px solid #ddd;
+    color: #333;
+    padding: 12px;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.btn-offline:hover {
+    background: #e2e6ea;
 }
 
 /* Rest Timer Styles */
@@ -899,4 +950,234 @@ select {
 @keyframes slideUp {
     from { transform: translateY(20px); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
+}
+
+/* Replace Exercise Modal Styles */
+.replacement-item-btn {
+    transition: background 0.2s;
+}
+
+.replacement-item-btn:hover {
+    background-color: #e0e0e0 !important;
+}
+
+.replacement-item-btn:active {
+    background-color: #d0d0d0 !important;
+}
+
+/* Phase 32: Exercise Picker Modal */
+.picker-category {
+    margin-bottom: 10px;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.picker-category-header {
+    padding: 12px 15px;
+    background: #f8f9fa;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    font-weight: bold;
+    user-select: none;
+}
+
+.picker-category-header:hover {
+    background: #e9ecef;
+}
+
+.picker-exercise-list {
+    background: white;
+}
+
+.picker-exercise-item {
+    padding: 10px 15px;
+    border-top: 1px solid #f1f3f5;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.picker-exercise-item:hover {
+    background: #f1f8ff;
+}
+
+.picker-exercise-item .ex-name {
+    font-size: 1rem;
+    color: #333;
+}
+
+.picker-exercise-item .ex-info {
+    font-size: 0.8rem;
+    color: #888;
+    margin-top: 2px;
+}
+
+.toggle-icon {
+    font-size: 0.8rem;
+    color: #aaa;
+}
+
+#replace-suggestions-container h4 {
+    margin-top: 15px;
+    margin-bottom: 10px;
+    font-size: 1.1em;
+    color: var(--primary);
+}
+
+/* Nutrition Day UI */
+.nutrition-summary-card {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+  padding: 15px;
+  background: #f9f9f9;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.macro-stat {
+  display: flex;
+  flex-direction: column;
+}
+
+.macro-stat strong {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.macro-stat .value {
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.macro-stat .target {
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.macro-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: #eee;
+  margin-top: 6px;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.macro-progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.meal-card {
+  background: white;
+  border-radius: 12px;
+  margin-bottom: 15px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  border: 1px solid #eee;
+}
+
+.meal-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 15px;
+  background: #fcfcfc;
+  border-bottom: 1px solid #eee;
+}
+
+.meal-card-header h4 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.meal-header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.ingredient-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.ingredient-row:last-child {
+  border-bottom: none;
+}
+
+.ingredient-info {
+  flex: 1;
+}
+
+.ingredient-name {
+  display: block;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.ingredient-details {
+  font-size: 0.8rem;
+  color: #777;
+}
+
+.ingredient-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.btn-icon:hover {
+  background: #f0f0f0;
+}
+
+.btn-icon.delete {
+  color: #e74c3c;
+}
+
+.btn-icon.edit {
+  color: #3498db;
+}
+
+.meal-card-footer {
+  padding: 10px 15px;
+  background: #fcfcfc;
+  border-top: 1px solid #eee;
+  text-align: right;
+}
+
+.add-ingredient-btn {
+  background: none;
+  border: 1px dashed #ccc;
+  color: #666;
+  width: 100%;
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.add-ingredient-btn:hover {
+  background: #f5f5f5;
+  border-color: #999;
 }
