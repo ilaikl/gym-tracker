@@ -265,13 +265,10 @@ class WorkoutEngine {
 
     /**
      * Promotes the actual performance from a logged exercise to the program template.
-     * (PLAN-008 | R14 | LLD-008)
+     * Gracefully handles manual exercises (no program template entry).
+     * (PLAN-008 | R14 | LLD-008 | PLAN-040 | R55 | LLD-040 | PLAN-041 | R56 | LLD-041)
      */
     async promoteToTarget(logExercise, templateService, syncAcrossDays = false) {
-        if (!logExercise.templateExerciseId) {
-            throw new Error('This exercise is not linked to a program template.');
-        }
-
         // 1. Prepare new target data based on actuals
         const lastWeight = logExercise.actualSets.length > 0
             ? (logExercise.actualSets[logExercise.actualSets.length - 1].actualWeight || 0)
@@ -286,43 +283,48 @@ class WorkoutEngine {
             targetReps: s.actualReps || s.targetReps || 0
         }));
 
-        const newData = {
-            defaultWeight: {
-                value: lastWeight,
-                unit: lastUnit,
-                label: 'Promoted from history'
-            },
-            targetSets: newTargetSets
+        const targets = {
+            targetSets: newTargetSets,
+            targetReps: newTargetSets.map(s => s.targetReps),
+            targetWeight: lastWeight
         };
 
-        // 2. Find the dayId for this exercise in the template
-        const program = await templateService.getProgram();
-        let targetDayId = null;
-
-        for (const day of program.days) {
-            if (day.exercises.some(e => e.id === logExercise.templateExerciseId)) {
-                targetDayId = day.id;
-                break;
-            }
-        }
-
-        if (!targetDayId) {
-            throw new Error('Could not find the original day in the template.');
-        }
-
-        // 3. Update the template
-        await templateService.updateExercise(targetDayId, logExercise.templateExerciseId, newData, syncAcrossDays);
-
-        // Phase 36: Update global library targets too
+        // 2. Always update global library targets (works for both program and manual exercises)
         try {
-            const targets = {
-                targetSets: newTargetSets,
-                targetReps: newTargetSets.map(s => s.targetReps),
-                targetWeight: lastWeight
-            };
-            await persistenceService.updateExerciseTargets(logExercise.name, targets);
+            const exId = logExercise.templateExerciseId || logExercise.id;
+            await persistenceService.updateExerciseTargets(exId, targets);
         } catch (e) {
             console.warn('WorkoutEngine: Failed to sync promoted targets to library', e);
+        }
+
+        // 3. Attempt program template update — skip silently if exercise not in program
+        if (logExercise.templateExerciseId) {
+            try {
+                const program = await templateService.getProgram();
+                let targetDayId = null;
+
+                for (const day of program.days) {
+                    if (day.exercises.some(e => e.id === logExercise.templateExerciseId)) {
+                        targetDayId = day.id;
+                        break;
+                    }
+                }
+
+                if (targetDayId) {
+                    const newData = {
+                        defaultWeight: {
+                            value: lastWeight,
+                            unit: lastUnit,
+                            label: 'Promoted from history'
+                        },
+                        targetSets: newTargetSets
+                    };
+                    await templateService.updateExercise(targetDayId, logExercise.templateExerciseId, newData, syncAcrossDays);
+                }
+                // If not found in program (manual exercise added to workout) — silently skip
+            } catch (e) {
+                console.warn('WorkoutEngine: Program template update skipped (manual exercise):', e.message);
+            }
         }
     }
 }

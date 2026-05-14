@@ -1029,18 +1029,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     const toggleManualBtn = document.getElementById('toggle-manual-ex');
     const existingExContainer = document.getElementById('existing-ex-container');
     const manualExContainer = document.getElementById('manual-ex-container');
-    const existingExSelect = document.getElementById('existing-ex-select');
     const addExistingExConfirm = document.getElementById('add-existing-ex-confirm');
     const addManualExConfirm = document.getElementById('add-manual-ex-confirm');
 
-    // Replace Exercise Modal UI
+    // Replace Exercise Modal UI — Phase 37 (PLAN-037 | R51 | LLD-037)
     const replaceExModal = document.getElementById('replace-ex-modal');
     const closeReplaceModalBtn = document.getElementById('close-replace-modal');
     const replaceExInfo = document.getElementById('replace-ex-info');
-    const replaceLibraryList = document.getElementById('replace-library-list');
-    const replaceDatabaseList = document.getElementById('replace-database-list');
-    const replaceLibrarySection = document.getElementById('replace-library-section');
-    const replaceDatabaseSection = document.getElementById('replace-database-section');
+    const replaceSubMuscleSection = document.getElementById('replace-submuscle-section');
+    const replaceSubMuscleList = document.getElementById('replace-submuscle-list');
+    const replaceMuscleSection = document.getElementById('replace-muscle-section');
+    const replaceMuscleList = document.getElementById('replace-muscle-list');
+    const replaceNoResults = document.getElementById('replace-noresults');
 
     // Progression UI Elements (Inline)
     function createInlineHistoryUI(container, exerciseId, buttonContainer = null) {
@@ -1587,7 +1587,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function openExercisePicker(callback) {
         currentPickerCallback = callback;
-        pickerModal.style.display = 'block';
+        pickerModal.style.display = 'flex';
         pickerSearch.value = '';
         await renderPickerCategories();
     }
@@ -1607,10 +1607,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         pickerCategories.innerHTML = '';
 
-        // Sort muscle groups: "My Exercises" first, then alphabetical
+        // Sort muscle groups: manual/my exercises first, then alphabetical
         const muscles = Object.keys(grouped).sort((a, b) => {
-            if (a === 'Manual') return -1;
-            if (b === 'Manual') return 1;
+            const aIsManual = a === 'My Exercises' || a === 'Manual';
+            const bIsManual = b === 'My Exercises' || b === 'Manual';
+            if (aIsManual && !bIsManual) return -1;
+            if (!aIsManual && bIsManual) return 1;
             return a.localeCompare(b);
         });
 
@@ -1644,11 +1646,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 exItem.className = 'picker-exercise-item';
                 exItem.innerHTML = `
                     <div class="ex-name">${ex.name}</div>
-                    <div class="ex-info">${ex.equipment || ''} ${ex.difficulty || ''}</div>
+                    <div class="ex-info">${ex.equipment || ''} ${ex.difficulty ? '· ' + ex.difficulty : ''}</div>
                 `;
-                exItem.onclick = () => {
-                    currentPickerCallback(ex);
+                exItem.onclick = async () => {
+                    // Phase 41: Fresh read for latest targets before calling back
+                    const fresh = await persistenceService.getExercise(ex.id) || ex;
                     pickerModal.style.display = 'none';
+                    currentPickerCallback(fresh);
                 };
                 exList.appendChild(exItem);
             });
@@ -1660,7 +1664,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     pickerSearch.oninput = () => renderPickerCategories(pickerSearch.value);
-    closePickerModalBtn.onclick = () => pickerModal.style.display = 'none';
+    closePickerModalBtn.onclick = () => {
+        pickerModal.style.display = 'none';
+        // If there's a pending add modal context, re-show it
+        if (addExModal && addExModal.dataset.reopenOnClose === 'true') {
+            addExModal.dataset.reopenOnClose = '';
+            addExModal.style.display = 'flex';
+        }
+    };
 
     // Hook up pickers to existing forms
     exNameInput.onclick = () => {
@@ -1681,36 +1692,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 exTargetSetsInput.value = ex.targetSets.map(s => s.targetReps || 0).join(', ');
             } else if (ex.targetReps && Array.isArray(ex.targetReps)) {
                 exTargetSetsInput.value = ex.targetReps.join(', ');
-            }
-        });
-    };
-
-    const manualExNameInput = document.getElementById('manual-ex-name');
-    const manualExBodyPartInput = document.getElementById('manual-ex-bodypart');
-    const manualExSetsInput = document.getElementById('manual-ex-sets');
-    const manualExRepsInput = document.getElementById('manual-ex-reps');
-    const manualExWeightInput = document.getElementById('manual-ex-weight');
-    const manualExNotesInput = document.getElementById('manual-ex-notes');
-
-    manualExNameInput.onclick = () => {
-        openExercisePicker((ex) => {
-            manualExNameInput.value = ex.name;
-            manualExBodyPartInput.value = ex.muscle || ex.bodyPartPrimary || '';
-            manualExNotesInput.value = ex.notes || ex.instructions || '';
-
-            // Phase 36: Pre-fill targets from global library
-            if (ex.targetWeight !== undefined) {
-                manualExWeightInput.value = ex.targetWeight;
-            } else if (ex.defaultWeight) {
-                manualExWeightInput.value = ex.defaultWeight.value;
-            }
-
-            if (ex.targetSets && ex.targetSets.length > 0) {
-                manualExSetsInput.value = ex.targetSets.length;
-                manualExRepsInput.value = ex.targetSets[0].targetReps || 0;
-            } else if (ex.targetReps && Array.isArray(ex.targetReps) && ex.targetReps.length > 0) {
-                manualExSetsInput.value = ex.targetReps.length;
-                manualExRepsInput.value = ex.targetReps[0];
             }
         });
     };
@@ -1980,14 +1961,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             }));
         });
 
-        // Initialize Sortable for active workout
+        // Initialize Sortable for active workout — Phase 39 (PLAN-039 | R53 | LLD-039)
         new Sortable(activeExercisesList, {
             animation: 150,
             handle: '.drag-handle',
-            forceFallback: true,      // Fixes behavior in scrollable containers
-            fallbackTolerance: 3,     // Prevents jittery starts
-            delay: 10,                // Small delay for touch devices
-            delayOnTouchOnly: true,   // Only apply delay on touch
+            ghostClass: 'sortable-ghost',
+            forceFallback: true,        // JS fallback drag — required for real mobile
+            fallbackOnBody: true,       // Append ghost to body (avoids stacking context issues)
+            fallbackTolerance: 3,
+            delay: 150,                 // ms hold before drag activates
+            delayOnTouchOnly: true,     // Only apply delay on touch, not mouse
+            touchStartThreshold: 5,     // px movement before drag begins
             onEnd: async (evt) => {
                 const exerciseIds = Array.from(activeExercisesList.children).map(child => child.dataset.exId);
                 const log = isEditingHistory ? historyViewLog : currentActiveLog;
@@ -2000,9 +1984,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // --- Add Exercise Modal Logic ---
-    showAddExModalBtn.addEventListener('click', async () => {
-        addExModal.style.display = 'block';
-        await populateExistingExSelect();
+    showAddExModalBtn.addEventListener('click', () => {
+        addExModal.style.display = 'flex';
+        // Default to existing tab
+        existingExContainer.style.display = 'block';
+        manualExContainer.style.display = 'none';
     });
 
     closeAddExModalBtn.addEventListener('click', () => {
@@ -2019,44 +2005,73 @@ document.addEventListener('DOMContentLoaded', async () => {
         manualExContainer.style.display = 'block';
     });
 
-    async function populateExistingExSelect() {
-        const program = await templateService.getProgram();
-        existingExSelect.innerHTML = '';
-
-        // Flatten all exercises from all days
-        const allExercises = [];
-        const seenIds = new Set();
-
-        program.days.forEach(day => {
-            day.exercises.forEach(ex => {
-                if (!seenIds.has(ex.id)) {
-                    allExercises.push(ex);
-                    seenIds.add(ex.id);
-                }
-            });
-        });
-
-        allExercises.forEach(ex => {
-            const option = document.createElement('option');
-            option.value = JSON.stringify(ex);
-            option.innerText = `${ex.name} (${ex.bodyPartPrimary})`;
-            existingExSelect.appendChild(option);
-        });
-    }
-
-    addExistingExConfirm.addEventListener('click', withActiveLog(async () => {
-        const exTemplate = JSON.parse(existingExSelect.value);
-        const log = isEditingHistory ? historyViewLog : currentActiveLog;
-        const updatedLog = await workoutEngine.addExtraExercise(log.id, exTemplate);
-        if (isEditingHistory) historyViewLog = updatedLog;
-        else currentActiveLog = updatedLog;
+    // Phase 40: "Browse Exercise Library" opens the categorized picker
+    // (PLAN-040 | R54 | LLD-040)
+    addExistingExConfirm.addEventListener('click', withActiveLog(() => {
         addExModal.style.display = 'none';
-        renderActiveExercises(updatedLog);
+        openExercisePicker(async (ex) => {
+            // Phase 41: Fresh read for latest targets
+            const fresh = await persistenceService.getExercise(ex.id) || ex;
+            // Build template compatible with workoutEngine.addExtraExercise
+            const exTemplate = buildExerciseTemplate(fresh);
+            const log = isEditingHistory ? historyViewLog : currentActiveLog;
+            const updatedLog = await workoutEngine.addExtraExercise(log.id, exTemplate);
+            if (isEditingHistory) historyViewLog = updatedLog;
+            else currentActiveLog = updatedLog;
+            renderActiveExercises(updatedLog);
+        });
     }));
 
-        addManualExConfirm.addEventListener('click', withActiveLog(async () => {
-        const name = document.getElementById('manual-ex-name').value;
-        const bodyPart = document.getElementById('manual-ex-bodypart').value;
+    /**
+     * Builds a template object compatible with WorkoutEngine.snapshotExercise
+     * from a global exercises-store record.
+     */
+    function buildExerciseTemplate(ex) {
+        const targetSets = ex.targetSets && ex.targetSets.length > 0
+            ? ex.targetSets
+            : Array.from({ length: ex.targetReps && Array.isArray(ex.targetReps) ? ex.targetReps.length : 3 },
+                (_, i) => ({ setNumber: i + 1, targetReps: Array.isArray(ex.targetReps) ? ex.targetReps[i] || 10 : (ex.targetReps || 10) }));
+
+        return {
+            id: ex.id,
+            name: ex.name,
+            bodyPartPrimary: ex.muscle || ex.bodyPartPrimary || '',
+            bodyPartSecondary: ex.bodyPartSecondary || [],
+            targetSets,
+            repGoalType: 'fixed',
+            defaultWeight: ex.defaultWeight || { value: ex.targetWeight || 0, unit: 'kg', label: '' },
+            notes: ex.notes || ex.instructions || '',
+            source: ex.source || 'library'
+        };
+    }
+
+    // Phase 40: Manual exercise name taps open picker for existing, or allow free text
+    // (PLAN-040 | R54 | LLD-040)
+    const manualExNameEl = document.getElementById('manual-ex-name');
+    const manualExBodyPartEl = document.getElementById('manual-ex-bodypart');
+    manualExNameEl.addEventListener('click', () => {
+        openExercisePicker((ex) => {
+            manualExNameEl.value = ex.name;
+            manualExBodyPartEl.value = ex.muscle || ex.bodyPartPrimary || '';
+            document.getElementById('manual-ex-notes').value = ex.notes || ex.instructions || '';
+            if (ex.targetWeight !== undefined) document.getElementById('manual-ex-weight').value = ex.targetWeight;
+            if (ex.targetSets && ex.targetSets.length > 0) {
+                document.getElementById('manual-ex-sets').value = ex.targetSets.length;
+                document.getElementById('manual-ex-reps').value = ex.targetSets[0].targetReps || 10;
+            } else if (Array.isArray(ex.targetReps) && ex.targetReps.length > 0) {
+                document.getElementById('manual-ex-sets').value = ex.targetReps.length;
+                document.getElementById('manual-ex-reps').value = ex.targetReps[0];
+            }
+            // Re-show add modal after picker closes
+            addExModal.style.display = 'flex';
+        });
+        // Hide add modal while picker is open
+        addExModal.style.display = 'none';
+    });
+
+    addManualExConfirm.addEventListener('click', withActiveLog(async () => {
+        const name = document.getElementById('manual-ex-name').value.trim();
+        const bodyPart = document.getElementById('manual-ex-bodypart').value.trim();
         const setsCount = parseInt(document.getElementById('manual-ex-sets').value) || 3;
         const reps = parseInt(document.getElementById('manual-ex-reps').value) || 10;
         const weight = parseFloat(document.getElementById('manual-ex-weight').value) || 0;
@@ -2069,22 +2084,25 @@ document.addEventListener('DOMContentLoaded', async () => {
             targetSets.push({ setNumber: i, targetReps: reps });
         }
 
+        const manualId = `manual_${Date.now()}`;
         const manualExTemplate = {
-            id: `manual_${Date.now()}`,
+            id: manualId,
             name,
-            bodyPartPrimary: bodyPart,
+            muscle: bodyPart || 'My Exercises',
+            bodyPartPrimary: bodyPart || 'My Exercises',
             bodyPartSecondary: [],
-            targetSets: targetSets,
+            targetSets,
+            targetReps: reps,
+            targetWeight: weight,
             repGoalType: 'fixed',
             defaultWeight: { value: weight, unit: 'kg', label: '' },
-            notes: notes,
+            notes,
             source: 'manual'
         };
 
-        // Phase 32: Save to global exercises library for future use
+        // Phase 40/54: Always save to global exercises library so it appears in picker
         try {
             await persistenceService.saveExercise(manualExTemplate);
-            // Update the global list used by other pickers
             if (window.commonExercisesList) {
                 window.commonExercisesList.push(manualExTemplate);
             }
@@ -2096,41 +2114,55 @@ document.addEventListener('DOMContentLoaded', async () => {
         const updatedLog = await workoutEngine.addExtraExercise(log.id, manualExTemplate);
         if (isEditingHistory) historyViewLog = updatedLog;
         else currentActiveLog = updatedLog;
+
+        // Clear fields
+        manualExNameEl.value = '';
+        manualExBodyPartEl.value = '';
+        document.getElementById('manual-ex-sets').value = '3';
+        document.getElementById('manual-ex-reps').value = '10';
+        document.getElementById('manual-ex-weight').value = '0';
+        document.getElementById('manual-ex-notes').value = '';
+
         addExModal.style.display = 'none';
         renderActiveExercises(updatedLog);
     }));
 
-    // --- Replace Exercise Modal Logic ---
+    // --- Replace Exercise Modal Logic --- Phase 37 (PLAN-037 | R51 | LLD-037)
     async function openReplaceModal(logId, loggedEx) {
-        replaceExInfo.innerText = `Replace: ${loggedEx.name}\nMuscle: ${loggedEx.bodyPartPrimary}`;
-        replaceLibraryList.innerHTML = '<p style="padding: 10px;">Loading...</p>';
-        replaceDatabaseList.innerHTML = '';
-        replaceExModal.style.display = 'block';
+        const muscle = loggedEx.bodyPartPrimary || loggedEx.muscle || '';
+        const subMuscle = loggedEx.subMuscle || '';
+        replaceExInfo.innerText = `Replacing: ${loggedEx.name}${subMuscle ? ' (' + subMuscle + ')' : ''}`;
+        replaceSubMuscleList.innerHTML = '<p style="padding:8px;color:#888;">Loading...</p>';
+        replaceMuscleList.innerHTML = '';
+        replaceSubMuscleSection.style.display = 'none';
+        replaceMuscleSection.style.display = 'none';
+        replaceNoResults.style.display = 'none';
+        replaceExModal.style.display = 'flex';
 
         try {
-            const sameMuscle = await persistenceService.getExercisesByMuscle(loggedEx.bodyPartPrimary);
-            const suggestions = sameMuscle.filter(ex => ex.id !== loggedEx.templateExerciseId);
+            const currentId = loggedEx.templateExerciseId || loggedEx.id;
 
-            // Separate Library (from programs) and Database (rest)
-            const program = await templateService.getProgram();
-            const libraryIds = new Set();
-            program.days.forEach(day => day.exercises.forEach(ex => libraryIds.add(ex.id)));
-
-            const library = suggestions.filter(ex => libraryIds.has(ex.id));
-            const database = suggestions.filter(ex => !libraryIds.has(ex.id));
-
-            renderReplacementList(replaceLibraryList, library, logId, loggedEx.id);
-            renderReplacementList(replaceDatabaseList, database, logId, loggedEx.id);
-
-            replaceLibrarySection.style.display = library.length > 0 ? 'block' : 'none';
-            replaceDatabaseSection.style.display = database.length > 0 ? 'block' : 'none';
-
-            if (suggestions.length === 0) {
-                replaceLibraryList.innerHTML = '<p style="padding: 10px; color: #888;">No similar exercises found.</p>';
+            // 1. Sub-muscle query (precise match)
+            let subMatches = [];
+            if (subMuscle) {
+                subMatches = (await persistenceService.getExercisesBySubMuscle(subMuscle))
+                    .filter(ex => ex.id !== currentId);
             }
+
+            // 2. Broad muscle fallback
+            const broadMatches = (await persistenceService.getExercisesByMuscle(muscle))
+                .filter(ex => ex.id !== currentId && !subMatches.some(sm => sm.id === ex.id));
+
+            renderReplacementList(replaceSubMuscleList, subMatches, logId, loggedEx.id);
+            renderReplacementList(replaceMuscleList, broadMatches, logId, loggedEx.id);
+
+            replaceSubMuscleSection.style.display = subMatches.length > 0 ? 'block' : 'none';
+            replaceMuscleSection.style.display = broadMatches.length > 0 ? 'block' : 'none';
+            replaceNoResults.style.display = (subMatches.length === 0 && broadMatches.length === 0) ? 'block' : 'none';
         } catch (err) {
             console.error('Error loading replacement suggestions:', err);
-            replaceLibraryList.innerHTML = '<p style="color: red; padding: 10px;">Error loading suggestions.</p>';
+            replaceSubMuscleList.innerHTML = '<p style="color:red;padding:8px;">Error loading suggestions.</p>';
+            replaceSubMuscleSection.style.display = 'block';
         }
     }
 
@@ -2139,15 +2171,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         list.forEach(ex => {
             const btn = document.createElement('button');
             btn.className = 'replacement-item-btn';
-            btn.style.width = '100%';
-            btn.style.textAlign = 'left';
-            btn.style.padding = '10px';
-            btn.style.marginBottom = '5px';
-            btn.style.background = '#f0f0f0';
-            btn.style.border = '1px solid #ddd';
-            btn.style.borderRadius = '4px';
-            btn.style.cursor = 'pointer';
-            btn.innerText = ex.name;
+            btn.style.cssText = 'width:100%;text-align:left;padding:10px;margin-bottom:5px;background:#f0f0f0;border:1px solid #ddd;border-radius:4px;cursor:pointer;font-size:0.95em;';
+            btn.innerHTML = `<strong>${ex.name}</strong>${ex.equipment ? '<br><small style="color:#888;">' + ex.equipment + '</small>' : ''}`;
             btn.onclick = async () => {
                 const updatedLog = await workoutEngine.replaceExercise(logId, oldLoggedExId, ex);
                 if (isEditingHistory) historyViewLog = updatedLog;

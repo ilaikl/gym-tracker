@@ -132,29 +132,29 @@ class PersistenceService {
     }
 
     /**
-     * Bulk save exercises.
-     * (PLAN-032 | R42 | LLD-032)
+     * Bulk save exercises with merge logic — preserves user-set targets.
+     * (PLAN-032 | R42 | LLD-032 | PLAN-041 | R56 | LLD-041)
      */
     async bulkSaveExercises(exercises) {
-        const store = await this.getStore('exercises', 'readwrite');
-        return new Promise((resolve, reject) => {
-            let i = 0;
-            function putNext() {
-                if (i < exercises.length) {
-                    // Add updatedAt for sync
-                    if (!exercises[i].updatedAt) {
-                        exercises[i].updatedAt = new Date().toISOString();
-                    }
-                    const request = store.put(exercises[i]);
-                    request.onsuccess = putNext;
-                    request.onerror = () => reject(request.error);
-                    i++;
-                } else {
-                    resolve();
-                }
+        // Use a transaction for efficiency, but do async reads first via getById
+        const now = new Date().toISOString();
+        for (const ex of exercises) {
+            const existing = await this.getById('exercises', ex.id);
+            let merged;
+            if (existing) {
+                // Preserve user-set target fields; update metadata only
+                merged = {
+                    ...ex,
+                    targetSets: existing.targetSets !== undefined ? existing.targetSets : ex.targetSets,
+                    targetReps: existing.targetReps !== undefined ? existing.targetReps : ex.targetReps,
+                    targetWeight: existing.targetWeight !== undefined ? existing.targetWeight : ex.targetWeight,
+                    updatedAt: existing.updatedAt || now
+                };
+            } else {
+                merged = { ...ex, updatedAt: ex.updatedAt || now };
             }
-            putNext();
-        });
+            await this.saveExercise(merged);
+        }
     }
 
     /**
@@ -189,6 +189,29 @@ class PersistenceService {
             (ex.bodyPartPrimary && ex.bodyPartPrimary.toLowerCase() === muscle.toLowerCase()) ||
             (ex.muscle && ex.muscle.toLowerCase() === muscle.toLowerCase())
         );
+    }
+
+    /**
+     * Returns all exercises matching the given sub-muscle group.
+     * (PLAN-037 | R51 | LLD-037)
+     * @param {string} subMuscle
+     * @returns {Promise<Array>}
+     */
+    async getExercisesBySubMuscle(subMuscle) {
+        const all = await this.getAll('exercises');
+        return all.filter(ex =>
+            ex.subMuscle && ex.subMuscle.toLowerCase() === subMuscle.toLowerCase()
+        );
+    }
+
+    /**
+     * Returns a single exercise by ID.
+     * (PLAN-041 | R56 | LLD-041)
+     * @param {string} id
+     * @returns {Promise<object|undefined>}
+     */
+    async getExercise(id) {
+        return this.getById('exercises', id);
     }
 
     async delete(storeName, id) {

@@ -28,7 +28,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:49.377Z"
+    "createdAt": "2026-04-28T16:55:49.377Z",
+    "subMuscle": "Abs"
   },
   {
     "id": "elbow-plank-abdominals",
@@ -59,7 +60,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:49.379Z"
+    "createdAt": "2026-04-28T16:55:49.379Z",
+    "subMuscle": "Abs"
   },
   {
     "id": "bottoms-up-abdominals",
@@ -90,7 +92,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:49.379Z"
+    "createdAt": "2026-04-28T16:55:49.379Z",
+    "subMuscle": "Abs"
   },
   {
     "id": "suspended-ab-fall-out-abdominals",
@@ -121,7 +124,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:49.379Z"
+    "createdAt": "2026-04-28T16:55:49.379Z",
+    "subMuscle": "Abs"
   },
   {
     "id": "standing-cable-low-to-high-twist-abdominals",
@@ -152,7 +156,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:49.379Z"
+    "createdAt": "2026-04-28T16:55:49.379Z",
+    "subMuscle": "Abs"
   },
   {
     "id": "dumbbell-spell-caster-abdominals",
@@ -183,7 +188,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:49.379Z"
+    "createdAt": "2026-04-28T16:55:49.379Z",
+    "subMuscle": "Abs"
   },
   {
     "id": "spider-crawl-abdominals",
@@ -214,7 +220,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:49.379Z"
+    "createdAt": "2026-04-28T16:55:49.379Z",
+    "subMuscle": "Abs"
   },
   {
     "id": "cocoons-abdominals",
@@ -245,7 +252,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:49.379Z"
+    "createdAt": "2026-04-28T16:55:49.379Z",
+    "subMuscle": "Abs"
   },
   {
     "id": "cross-body-crunch-abdominals",
@@ -276,7 +284,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:49.379Z"
+    "createdAt": "2026-04-28T16:55:49.379Z",
+    "subMuscle": "Abs"
   },
   {
     "id": "elbow-to-knee-crunch-abdominals",
@@ -307,7 +316,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:49.379Z"
+    "createdAt": "2026-04-28T16:55:49.379Z",
+    "subMuscle": "Abs"
   },
   {
     "id": "hip-circles-prone-abductors",
@@ -338,7 +348,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:50.146Z"
+    "createdAt": "2026-04-28T16:55:50.146Z",
+    "subMuscle": "Legs"
   },
   {
     "id": "standing-hip-circle-abductors",
@@ -369,7 +380,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:50.146Z"
+    "createdAt": "2026-04-28T16:55:50.146Z",
+    "subMuscle": "Legs"
   },
   {
     "id": "lateral-band-walk-abductors",
@@ -400,7 +412,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:50.146Z"
+    "createdAt": "2026-04-28T16:55:50.146Z",
+    "subMuscle": "Legs"
   },
   {
     "id": "dynamic-pigeon-stretch-abductors",
@@ -431,7 +444,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:50.146Z"
+    "createdAt": "2026-04-28T16:55:50.146Z",
+    "subMuscle": "Legs"
   },
   {
     "id": "cross-over-jack-abductors",
@@ -462,7 +476,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:50.146Z"
+    "createdAt": "2026-04-28T16:55:50.146Z",
+    "subMuscle": "Legs"
   },
   {
     "id": "traveling-thigh-killa-abductors",
@@ -493,7 +508,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:50.146Z"
+    "createdAt": "2026-04-28T16:55:50.146Z",
+    "subMuscle": "Legs"
   },
   {
     "id": "fyr-thigh-killa-abductors",
@@ -524,7 +540,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:50.146Z"
+    "createdAt": "2026-04-28T16:55:50.146Z",
+    "subMuscle": "Legs"
   },
   {
     "id": "hm-straddle-stretch-abductors",
@@ -555,7 +572,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:50.146Z"
+    "createdAt": "2026-04-28T16:55:50.146Z",
+    "subMuscle": "Legs"
   },
   {
     "id": "hm-right-leg-swing-abductors",
@@ -586,7 +604,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:50.146Z"
+    "createdAt": "2026-04-28T16:55:50.146Z",
+    "subMuscle": "Legs"
   },
   {
     "id": "hm-right-side-kick-abductors",
@@ -617,7 +636,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:50.146Z"
+    "createdAt": "2026-04-28T16:55:50.146Z",
+    "subMuscle": "Legs"
   },
   {
     "id": "thigh-adductor-adductors",
@@ -648,7 +668,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:51.264Z"
+    "createdAt": "2026-04-28T16:55:51.264Z",
+    "subMuscle": "Legs"
   },
   {
     "id": "lateral-cone-hop-adductors",
@@ -679,7 +700,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:51.264Z"
+    "createdAt": "2026-04-28T16:55:51.264Z",
+    "subMuscle": "Legs"
   },
   {
     "id": "lateral-box-jump-adductors",
@@ -710,7 +732,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:51.264Z"
+    "createdAt": "2026-04-28T16:55:51.264Z",
+    "subMuscle": "Legs"
   },
   {
     "id": "side-to-side-adductor-stretch-adductors",
@@ -741,7 +764,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:51.264Z"
+    "createdAt": "2026-04-28T16:55:51.264Z",
+    "subMuscle": "Legs"
   },
   {
     "id": "groiners-adductors",
@@ -772,7 +796,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:51.264Z"
+    "createdAt": "2026-04-28T16:55:51.264Z",
+    "subMuscle": "Legs"
   },
   {
     "id": "hm-left-leg-swing-adductors",
@@ -803,7 +828,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:51.264Z"
+    "createdAt": "2026-04-28T16:55:51.264Z",
+    "subMuscle": "Legs"
   },
   {
     "id": "uns-foam-roll-adductor-adductors",
@@ -834,7 +860,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:51.264Z"
+    "createdAt": "2026-04-28T16:55:51.264Z",
+    "subMuscle": "Legs"
   },
   {
     "id": "band-hip-adductions-adductors",
@@ -865,7 +892,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:51.264Z"
+    "createdAt": "2026-04-28T16:55:51.264Z",
+    "subMuscle": "Legs"
   },
   {
     "id": "side-lying-leg-adduction-scissor-adductors",
@@ -896,7 +924,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:51.264Z"
+    "createdAt": "2026-04-28T16:55:51.264Z",
+    "subMuscle": "Legs"
   },
   {
     "id": "side-leg-raises-adductors",
@@ -927,7 +956,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:51.264Z"
+    "createdAt": "2026-04-28T16:55:51.264Z",
+    "subMuscle": "Abs"
   },
   {
     "id": "incline-hammer-curls-biceps",
@@ -958,7 +988,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:52.204Z"
+    "createdAt": "2026-04-28T16:55:52.204Z",
+    "subMuscle": "Pecs (Upper)"
   },
   {
     "id": "wide-grip-barbell-curl-biceps",
@@ -989,7 +1020,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:52.204Z"
+    "createdAt": "2026-04-28T16:55:52.204Z",
+    "subMuscle": "Biceps Short Head"
   },
   {
     "id": "hammer-curls-biceps",
@@ -1020,7 +1052,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:52.204Z"
+    "createdAt": "2026-04-28T16:55:52.204Z",
+    "subMuscle": "Biceps Long Head"
   },
   {
     "id": "ez-bar-curl-biceps",
@@ -1051,7 +1084,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:52.204Z"
+    "createdAt": "2026-04-28T16:55:52.204Z",
+    "subMuscle": "Biceps"
   },
   {
     "id": "zottman-curl-biceps",
@@ -1082,7 +1116,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:52.205Z"
+    "createdAt": "2026-04-28T16:55:52.205Z",
+    "subMuscle": "Biceps"
   },
   {
     "id": "barbell-curl-biceps",
@@ -1113,7 +1148,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:52.205Z"
+    "createdAt": "2026-04-28T16:55:52.205Z",
+    "subMuscle": "Biceps Short Head"
   },
   {
     "id": "ez-bar-spider-curl-biceps",
@@ -1144,7 +1180,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:52.205Z"
+    "createdAt": "2026-04-28T16:55:52.205Z",
+    "subMuscle": "Biceps"
   },
   {
     "id": "biceps-curl-to-shoulder-press-biceps",
@@ -1175,7 +1212,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:52.205Z"
+    "createdAt": "2026-04-28T16:55:52.205Z",
+    "subMuscle": "Anterior Deltoid"
   },
   {
     "id": "concentration-curl-biceps",
@@ -1206,7 +1244,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:52.205Z"
+    "createdAt": "2026-04-28T16:55:52.205Z",
+    "subMuscle": "Biceps Short Head"
   },
   {
     "id": "flexor-incline-dumbbell-curls-biceps",
@@ -1237,7 +1276,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:52.205Z"
+    "createdAt": "2026-04-28T16:55:52.205Z",
+    "subMuscle": "Pecs (Upper)"
   },
   {
     "id": "smith-machine-calf-raise-calves",
@@ -1268,7 +1308,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:52.958Z"
+    "createdAt": "2026-04-28T16:55:52.958Z",
+    "subMuscle": "Calves"
   },
   {
     "id": "standing-calf-raises-calves",
@@ -1299,7 +1340,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:52.958Z"
+    "createdAt": "2026-04-28T16:55:52.958Z",
+    "subMuscle": "Calves"
   },
   {
     "id": "standing-dumbbell-calf-raise-calves",
@@ -1330,7 +1372,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:52.958Z"
+    "createdAt": "2026-04-28T16:55:52.958Z",
+    "subMuscle": "Calves"
   },
   {
     "id": "seated-single-leg-calf-press-gethin-variation-calves",
@@ -1361,7 +1404,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:52.958Z"
+    "createdAt": "2026-04-28T16:55:52.958Z",
+    "subMuscle": "Calves"
   },
   {
     "id": "seated-calf-raise-gethin-variation-calves",
@@ -1392,7 +1436,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:52.958Z"
+    "createdAt": "2026-04-28T16:55:52.958Z",
+    "subMuscle": "Calves"
   },
   {
     "id": "agility-ladder-calves",
@@ -1423,7 +1468,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:52.958Z"
+    "createdAt": "2026-04-28T16:55:52.958Z",
+    "subMuscle": "Legs"
   },
   {
     "id": "donkey-calf-raise-gethin-variation-calves",
@@ -1454,7 +1500,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:52.958Z"
+    "createdAt": "2026-04-28T16:55:52.958Z",
+    "subMuscle": "Calves"
   },
   {
     "id": "dumbbell-bench-press-chest",
@@ -1485,7 +1532,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:53.982Z"
+    "createdAt": "2026-04-28T16:55:53.982Z",
+    "subMuscle": "Pecs (Mid)"
   },
   {
     "id": "close-grip-bench-press-chest",
@@ -1516,7 +1564,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:53.982Z"
+    "createdAt": "2026-04-28T16:55:53.982Z",
+    "subMuscle": "Pecs (Mid)"
   },
   {
     "id": "dumbbell-flyes-chest",
@@ -1547,7 +1596,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:53.982Z"
+    "createdAt": "2026-04-28T16:55:53.982Z",
+    "subMuscle": "Pecs (Mid)"
   },
   {
     "id": "low-cable-cross-over-chest",
@@ -1578,7 +1628,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:53.982Z"
+    "createdAt": "2026-04-28T16:55:53.982Z",
+    "subMuscle": "Chest"
   },
   {
     "id": "incline-dumbbell-bench-press-chest",
@@ -1609,7 +1660,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:53.982Z"
+    "createdAt": "2026-04-28T16:55:53.982Z",
+    "subMuscle": "Pecs (Upper)"
   },
   {
     "id": "pushups-chest",
@@ -1640,7 +1692,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:53.982Z"
+    "createdAt": "2026-04-28T16:55:53.982Z",
+    "subMuscle": "Pecs (Mid)"
   },
   {
     "id": "barbell-bench-press-medium-grip-chest",
@@ -1671,7 +1724,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:53.982Z"
+    "createdAt": "2026-04-28T16:55:53.982Z",
+    "subMuscle": "Pecs (Mid)"
   },
   {
     "id": "chest-dip-chest",
@@ -1702,7 +1756,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:53.982Z"
+    "createdAt": "2026-04-28T16:55:53.982Z",
+    "subMuscle": "Pecs (Lower)"
   },
   {
     "id": "wide-grip-decline-barbell-bench-press-chest",
@@ -1733,7 +1788,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:53.982Z"
+    "createdAt": "2026-04-28T16:55:53.982Z",
+    "subMuscle": "Pecs (Lower)"
   },
   {
     "id": "cable-crossover-chest",
@@ -1764,7 +1820,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:53.983Z"
+    "createdAt": "2026-04-28T16:55:53.983Z",
+    "subMuscle": "Pecs (Mid)"
   },
   {
     "id": "rickshaw-carry-forearms",
@@ -1795,7 +1852,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:54.749Z"
+    "createdAt": "2026-04-28T16:55:54.749Z",
+    "subMuscle": "Arms"
   },
   {
     "id": "palms-down-wrist-curl-over-bench-forearms",
@@ -1826,7 +1884,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:54.749Z"
+    "createdAt": "2026-04-28T16:55:54.749Z",
+    "subMuscle": "Arms"
   },
   {
     "id": "straight-bar-wrist-roll-up-forearms",
@@ -1857,7 +1916,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:54.749Z"
+    "createdAt": "2026-04-28T16:55:54.749Z",
+    "subMuscle": "Arms"
   },
   {
     "id": "palms-up-wrist-curl-over-bench-forearms",
@@ -1888,7 +1948,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:54.749Z"
+    "createdAt": "2026-04-28T16:55:54.749Z",
+    "subMuscle": "Arms"
   },
   {
     "id": "standing-behind-the-back-wrist-curl-forearms",
@@ -1919,7 +1980,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:54.749Z"
+    "createdAt": "2026-04-28T16:55:54.749Z",
+    "subMuscle": "Arms"
   },
   {
     "id": "wrist-roller-forearms",
@@ -1950,7 +2012,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:54.749Z"
+    "createdAt": "2026-04-28T16:55:54.749Z",
+    "subMuscle": "Arms"
   },
   {
     "id": "seated-finger-curl-forearms",
@@ -1981,7 +2044,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:54.749Z"
+    "createdAt": "2026-04-28T16:55:54.749Z",
+    "subMuscle": "Arms"
   },
   {
     "id": "dumbbell-farmers-walk-forearms",
@@ -2012,7 +2076,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:54.749Z"
+    "createdAt": "2026-04-28T16:55:54.749Z",
+    "subMuscle": "Arms"
   },
   {
     "id": "seated-two-arm-palms-up-low-pulley-wrist-curl-forearms",
@@ -2043,7 +2108,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:54.749Z"
+    "createdAt": "2026-04-28T16:55:54.749Z",
+    "subMuscle": "Arms"
   },
   {
     "id": "seated-one-arm-dumbbell-palms-up-wrist-curl-forearms",
@@ -2074,7 +2140,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:54.749Z"
+    "createdAt": "2026-04-28T16:55:54.749Z",
+    "subMuscle": "Arms"
   },
   {
     "id": "barbell-glute-bridge-glutes",
@@ -2105,7 +2172,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:55.506Z"
+    "createdAt": "2026-04-28T16:55:55.506Z",
+    "subMuscle": "Glutes"
   },
   {
     "id": "barbell-hip-thrust-glutes",
@@ -2136,7 +2204,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:55.506Z"
+    "createdAt": "2026-04-28T16:55:55.506Z",
+    "subMuscle": "Glutes"
   },
   {
     "id": "single-leg-cable-hip-extension-glutes",
@@ -2167,7 +2236,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:55.506Z"
+    "createdAt": "2026-04-28T16:55:55.506Z",
+    "subMuscle": "Glutes"
   },
   {
     "id": "glute-bridge-glutes",
@@ -2198,7 +2268,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:55.506Z"
+    "createdAt": "2026-04-28T16:55:55.506Z",
+    "subMuscle": "Glutes"
   },
   {
     "id": "seated-glute-stretch-glutes",
@@ -2229,7 +2300,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:55.506Z"
+    "createdAt": "2026-04-28T16:55:55.506Z",
+    "subMuscle": "Glutes"
   },
   {
     "id": "glute-bridge-hamstring-walkout-glutes",
@@ -2260,7 +2332,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:55.506Z"
+    "createdAt": "2026-04-28T16:55:55.506Z",
+    "subMuscle": "Hamstrings"
   },
   {
     "id": "suspended-hip-thrust-glutes",
@@ -2291,7 +2364,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:55.506Z"
+    "createdAt": "2026-04-28T16:55:55.506Z",
+    "subMuscle": "Glutes"
   },
   {
     "id": "neck-bridge-supine-glutes",
@@ -2322,7 +2396,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:55.506Z"
+    "createdAt": "2026-04-28T16:55:55.506Z",
+    "subMuscle": "Traps/Neck"
   },
   {
     "id": "walking-high-knee-glutes",
@@ -2353,7 +2428,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:55.506Z"
+    "createdAt": "2026-04-28T16:55:55.506Z",
+    "subMuscle": "Glutes"
   },
   {
     "id": "barbell-deadlift-hamstrings",
@@ -2384,7 +2460,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:56.627Z"
+    "createdAt": "2026-04-28T16:55:56.627Z",
+    "subMuscle": "Lower Back"
   },
   {
     "id": "clean-deadlift-hamstrings",
@@ -2415,7 +2492,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:56.627Z"
+    "createdAt": "2026-04-28T16:55:56.627Z",
+    "subMuscle": "Lower Back"
   },
   {
     "id": "sumo-deadlift-hamstrings",
@@ -2446,7 +2524,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:56.627Z"
+    "createdAt": "2026-04-28T16:55:56.627Z",
+    "subMuscle": "Lower Back"
   },
   {
     "id": "romanian-deadlift-from-deficit-hamstrings",
@@ -2477,7 +2556,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:56.627Z"
+    "createdAt": "2026-04-28T16:55:56.627Z",
+    "subMuscle": "Lower Back"
   },
   {
     "id": "power-snatch-hamstrings",
@@ -2508,7 +2588,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:56.627Z"
+    "createdAt": "2026-04-28T16:55:56.627Z",
+    "subMuscle": "Legs"
   },
   {
     "id": "power-clean-from-blocks-hamstrings",
@@ -2539,7 +2620,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:56.627Z"
+    "createdAt": "2026-04-28T16:55:56.627Z",
+    "subMuscle": "Legs"
   },
   {
     "id": "natural-glute-ham-raise-hamstrings",
@@ -2570,7 +2652,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:56.627Z"
+    "createdAt": "2026-04-28T16:55:56.627Z",
+    "subMuscle": "Hamstrings"
   },
   {
     "id": "glute-ham-raise-hamstrings",
@@ -2601,7 +2684,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:56.627Z"
+    "createdAt": "2026-04-28T16:55:56.627Z",
+    "subMuscle": "Hamstrings"
   },
   {
     "id": "romanian-deadlift-with-dumbbells-hamstrings",
@@ -2632,7 +2716,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:56.627Z"
+    "createdAt": "2026-04-28T16:55:56.627Z",
+    "subMuscle": "Lower Back"
   },
   {
     "id": "snatch-deadlift-hamstrings",
@@ -2663,7 +2748,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:56.627Z"
+    "createdAt": "2026-04-28T16:55:56.627Z",
+    "subMuscle": "Lower Back"
   },
   {
     "id": "weighted-pull-up-lats",
@@ -2694,7 +2780,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:57.573Z"
+    "createdAt": "2026-04-28T16:55:57.573Z",
+    "subMuscle": "Lats"
   },
   {
     "id": "pullups-lats",
@@ -2725,7 +2812,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:57.573Z"
+    "createdAt": "2026-04-28T16:55:57.573Z",
+    "subMuscle": "Lats"
   },
   {
     "id": "close-grip-pull-down-lats",
@@ -2756,7 +2844,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:57.573Z"
+    "createdAt": "2026-04-28T16:55:57.573Z",
+    "subMuscle": "Lats"
   },
   {
     "id": "pull-up-lats",
@@ -2787,7 +2876,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:57.573Z"
+    "createdAt": "2026-04-28T16:55:57.573Z",
+    "subMuscle": "Lats"
   },
   {
     "id": "shotgun-row-lats",
@@ -2818,7 +2908,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:57.573Z"
+    "createdAt": "2026-04-28T16:55:57.573Z",
+    "subMuscle": "Back"
   },
   {
     "id": "muscle-up-lats",
@@ -2849,7 +2940,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:57.573Z"
+    "createdAt": "2026-04-28T16:55:57.573Z",
+    "subMuscle": "Back"
   },
   {
     "id": "close-grip-front-lat-pulldown-lats",
@@ -2880,7 +2972,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:57.573Z"
+    "createdAt": "2026-04-28T16:55:57.573Z",
+    "subMuscle": "Lats"
   },
   {
     "id": "rocky-pull-upspulldowns-lats",
@@ -2911,7 +3004,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:57.573Z"
+    "createdAt": "2026-04-28T16:55:57.573Z",
+    "subMuscle": "Lats"
   },
   {
     "id": "around-the-world-pull-up-lats",
@@ -2942,7 +3036,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:57.574Z"
+    "createdAt": "2026-04-28T16:55:57.574Z",
+    "subMuscle": "Lats"
   },
   {
     "id": "assisted-chin-up-lats",
@@ -2973,7 +3068,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:57.574Z"
+    "createdAt": "2026-04-28T16:55:57.574Z",
+    "subMuscle": "Lats"
   },
   {
     "id": "atlas-stones-lower_back",
@@ -3004,7 +3100,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:58.705Z"
+    "createdAt": "2026-04-28T16:55:58.705Z",
+    "subMuscle": "Back"
   },
   {
     "id": "back-extension-lower_back",
@@ -3035,7 +3132,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:58.705Z"
+    "createdAt": "2026-04-28T16:55:58.705Z",
+    "subMuscle": "Lower Back"
   },
   {
     "id": "barbell-deficit-deadlift-lower_back",
@@ -3066,7 +3164,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:58.705Z"
+    "createdAt": "2026-04-28T16:55:58.705Z",
+    "subMuscle": "Lower Back"
   },
   {
     "id": "axle-deadlift-lower_back",
@@ -3097,7 +3196,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:58.705Z"
+    "createdAt": "2026-04-28T16:55:58.705Z",
+    "subMuscle": "Lower Back"
   },
   {
     "id": "partner-flat-bench-back-extension-lower_back",
@@ -3128,7 +3228,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:58.705Z"
+    "createdAt": "2026-04-28T16:55:58.705Z",
+    "subMuscle": "Lower Back"
   },
   {
     "id": "partner-superman-with-alternating-high-five-lower_back",
@@ -3159,7 +3260,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:58.705Z"
+    "createdAt": "2026-04-28T16:55:58.705Z",
+    "subMuscle": "Back"
   },
   {
     "id": "keg-load-lower_back",
@@ -3190,7 +3292,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:58.705Z"
+    "createdAt": "2026-04-28T16:55:58.705Z",
+    "subMuscle": "Back"
   },
   {
     "id": "partner-bench-back-extension-lower_back",
@@ -3221,7 +3324,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:58.705Z"
+    "createdAt": "2026-04-28T16:55:58.705Z",
+    "subMuscle": "Lower Back"
   },
   {
     "id": "yoga-plex-lower_back",
@@ -3252,7 +3356,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:58.705Z"
+    "createdAt": "2026-04-28T16:55:58.705Z",
+    "subMuscle": "Back"
   },
   {
     "id": "exercise-ball-rear-delt-fly-lower_back",
@@ -3283,7 +3388,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:58.705Z"
+    "createdAt": "2026-04-28T16:55:58.705Z",
+    "subMuscle": "Rhomboids"
   },
   {
     "id": "t-bar-row-with-handle-middle_back",
@@ -3314,7 +3420,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:59.650Z"
+    "createdAt": "2026-04-28T16:55:59.650Z",
+    "subMuscle": "Mid-Back"
   },
   {
     "id": "reverse-grip-bent-over-row-middle_back",
@@ -3345,7 +3452,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:59.650Z"
+    "createdAt": "2026-04-28T16:55:59.650Z",
+    "subMuscle": "Back"
   },
   {
     "id": "one-arm-dumbbell-row-middle_back",
@@ -3376,7 +3484,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:59.650Z"
+    "createdAt": "2026-04-28T16:55:59.650Z",
+    "subMuscle": "Mid-Back"
   },
   {
     "id": "one-arm-long-bar-row-middle_back",
@@ -3407,7 +3516,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:59.650Z"
+    "createdAt": "2026-04-28T16:55:59.650Z",
+    "subMuscle": "Back"
   },
   {
     "id": "t-bar-row-middle_back",
@@ -3438,7 +3548,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:59.650Z"
+    "createdAt": "2026-04-28T16:55:59.650Z",
+    "subMuscle": "Mid-Back"
   },
   {
     "id": "alternating-sit-through-with-crunch-middle_back",
@@ -3469,7 +3580,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:59.650Z"
+    "createdAt": "2026-04-28T16:55:59.650Z",
+    "subMuscle": "Abs"
   },
   {
     "id": "rower-middle_back",
@@ -3500,7 +3612,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:59.650Z"
+    "createdAt": "2026-04-28T16:55:59.650Z",
+    "subMuscle": "Back"
   },
   {
     "id": "seated-cable-rows-middle_back",
@@ -3531,7 +3644,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:59.650Z"
+    "createdAt": "2026-04-28T16:55:59.650Z",
+    "subMuscle": "Mid-Back"
   },
   {
     "id": "incline-dumbbell-row-middle_back",
@@ -3562,7 +3676,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:59.650Z"
+    "createdAt": "2026-04-28T16:55:59.650Z",
+    "subMuscle": "Mid-Back"
   },
   {
     "id": "bent-over-two-arm-long-bar-row-middle_back",
@@ -3593,7 +3708,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:55:59.650Z"
+    "createdAt": "2026-04-28T16:55:59.650Z",
+    "subMuscle": "Back"
   },
   {
     "id": "lying-face-down-plate-neck-resistance-neck",
@@ -3624,7 +3740,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:56:00.767Z"
+    "createdAt": "2026-04-28T16:56:00.767Z",
+    "subMuscle": "Traps/Neck"
   },
   {
     "id": "lying-face-up-plate-neck-resistance-neck",
@@ -3655,7 +3772,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:56:00.767Z"
+    "createdAt": "2026-04-28T16:56:00.767Z",
+    "subMuscle": "Traps/Neck"
   },
   {
     "id": "seated-head-harness-neck-resistance-neck",
@@ -3686,7 +3804,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:56:00.767Z"
+    "createdAt": "2026-04-28T16:56:00.767Z",
+    "subMuscle": "Traps/Neck"
   },
   {
     "id": "isometric-neck-exercise-sides-neck",
@@ -3717,7 +3836,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:56:00.767Z"
+    "createdAt": "2026-04-28T16:56:00.767Z",
+    "subMuscle": "Traps/Neck"
   },
   {
     "id": "isometric-neck-exercise-front-and-back-neck",
@@ -3748,7 +3868,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:56:00.767Z"
+    "createdAt": "2026-04-28T16:56:00.767Z",
+    "subMuscle": "Traps/Neck"
   },
   {
     "id": "neck-bridge-prone-neck",
@@ -3779,7 +3900,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:56:00.767Z"
+    "createdAt": "2026-04-28T16:56:00.767Z",
+    "subMuscle": "Traps/Neck"
   },
   {
     "id": "side-neck-stretch-neck",
@@ -3810,7 +3932,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:56:00.767Z"
+    "createdAt": "2026-04-28T16:56:00.767Z",
+    "subMuscle": "Traps/Neck"
   },
   {
     "id": "chin-to-chest-stretch-neck",
@@ -3841,7 +3964,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:56:00.767Z"
+    "createdAt": "2026-04-28T16:56:00.767Z",
+    "subMuscle": "Neck"
   },
   {
     "id": "neck-smr-neck",
@@ -3872,7 +3996,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:56:00.767Z"
+    "createdAt": "2026-04-28T16:56:00.767Z",
+    "subMuscle": "Traps/Neck"
   },
   {
     "id": "single-leg-press-quadriceps",
@@ -3903,7 +4028,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:56:01.907Z"
+    "createdAt": "2026-04-28T16:56:01.907Z",
+    "subMuscle": "Quads"
   },
   {
     "id": "tire-flip-quadriceps",
@@ -3934,7 +4060,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:56:01.907Z"
+    "createdAt": "2026-04-28T16:56:01.907Z",
+    "subMuscle": "Legs"
   },
   {
     "id": "barbell-back-squat-to-box-quadriceps",
@@ -3965,7 +4092,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:56:01.907Z"
+    "createdAt": "2026-04-28T16:56:01.907Z",
+    "subMuscle": "Quads"
   },
   {
     "id": "power-snatch-quadriceps",
@@ -3996,7 +4124,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:56:01.907Z"
+    "createdAt": "2026-04-28T16:56:01.907Z",
+    "subMuscle": "Legs"
   },
   {
     "id": "reverse-band-box-squat-quadriceps",
@@ -4027,7 +4156,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:56:01.907Z"
+    "createdAt": "2026-04-28T16:56:01.907Z",
+    "subMuscle": "Quads"
   },
   {
     "id": "jumping-rope-quadriceps",
@@ -4058,7 +4188,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:56:01.907Z"
+    "createdAt": "2026-04-28T16:56:01.907Z",
+    "subMuscle": "Legs"
   },
   {
     "id": "barbell-walking-lunge-quadriceps",
@@ -4089,7 +4220,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:56:01.907Z"
+    "createdAt": "2026-04-28T16:56:01.907Z",
+    "subMuscle": "Quads"
   },
   {
     "id": "single-leg-push-off-quadriceps",
@@ -4120,7 +4252,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:56:01.907Z"
+    "createdAt": "2026-04-28T16:56:01.907Z",
+    "subMuscle": "Legs"
   },
   {
     "id": "olympic-squat-quadriceps",
@@ -4151,7 +4284,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:56:01.907Z"
+    "createdAt": "2026-04-28T16:56:01.907Z",
+    "subMuscle": "Quads"
   },
   {
     "id": "stair-climber-quadriceps",
@@ -4182,7 +4316,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:56:01.907Z"
+    "createdAt": "2026-04-28T16:56:01.907Z",
+    "subMuscle": "Legs"
   },
   {
     "id": "leverage-shrug-traps",
@@ -4213,7 +4348,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:56:03.025Z"
+    "createdAt": "2026-04-28T16:56:03.025Z",
+    "subMuscle": "Traps/Neck"
   },
   {
     "id": "smith-machine-shrug-traps",
@@ -4244,7 +4380,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:56:03.025Z"
+    "createdAt": "2026-04-28T16:56:03.025Z",
+    "subMuscle": "Traps/Neck"
   },
   {
     "id": "machine-low-row-traps",
@@ -4275,7 +4412,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:56:03.025Z"
+    "createdAt": "2026-04-28T16:56:03.025Z",
+    "subMuscle": "Back"
   },
   {
     "id": "single-arm-inverted-row-traps",
@@ -4306,7 +4444,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:56:03.025Z"
+    "createdAt": "2026-04-28T16:56:03.025Z",
+    "subMuscle": "Back"
   },
   {
     "id": "machine-shrug-gethin-variation-traps",
@@ -4337,7 +4476,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:56:03.025Z"
+    "createdAt": "2026-04-28T16:56:03.025Z",
+    "subMuscle": "Traps/Neck"
   },
   {
     "id": "dumbbell-pull-over-traps",
@@ -4368,7 +4508,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:56:03.025Z"
+    "createdAt": "2026-04-28T16:56:03.025Z",
+    "subMuscle": "Back"
   },
   {
     "id": "standing-dumbbell-shrug-gethin-variation-traps",
@@ -4399,7 +4540,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:56:03.025Z"
+    "createdAt": "2026-04-28T16:56:03.025Z",
+    "subMuscle": "Traps/Neck"
   },
   {
     "id": "single-arm-dumbbell-row-traps",
@@ -4430,7 +4572,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:56:03.025Z"
+    "createdAt": "2026-04-28T16:56:03.025Z",
+    "subMuscle": "Mid-Back"
   },
   {
     "id": "smith-machine-single-arm-shrug-traps",
@@ -4461,7 +4604,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:56:03.025Z"
+    "createdAt": "2026-04-28T16:56:03.025Z",
+    "subMuscle": "Traps/Neck"
   },
   {
     "id": "standing-dumbbell-upright-row-traps",
@@ -4492,7 +4636,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:56:03.025Z"
+    "createdAt": "2026-04-28T16:56:03.025Z",
+    "subMuscle": "Lateral Deltoid"
   },
   {
     "id": "triceps-dip-triceps",
@@ -4523,7 +4668,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:56:03.988Z"
+    "createdAt": "2026-04-28T16:56:03.988Z",
+    "subMuscle": "Pecs (Lower)"
   },
   {
     "id": "dumbbell-floor-press-triceps",
@@ -4554,7 +4700,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:56:03.988Z"
+    "createdAt": "2026-04-28T16:56:03.988Z",
+    "subMuscle": "Triceps"
   },
   {
     "id": "cable-v-bar-push-down-triceps",
@@ -4585,7 +4732,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:56:03.988Z"
+    "createdAt": "2026-04-28T16:56:03.988Z",
+    "subMuscle": "Triceps Lateral Head"
   },
   {
     "id": "ez-bar-skullcrusher-triceps",
@@ -4616,7 +4764,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:56:03.988Z"
+    "createdAt": "2026-04-28T16:56:03.988Z",
+    "subMuscle": "Triceps"
   },
   {
     "id": "decline-ez-bar-skullcrusher-triceps",
@@ -4647,7 +4796,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:56:03.988Z"
+    "createdAt": "2026-04-28T16:56:03.988Z",
+    "subMuscle": "Pecs (Lower)"
   },
   {
     "id": "weighted-bench-dip-triceps",
@@ -4678,7 +4828,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:56:03.988Z"
+    "createdAt": "2026-04-28T16:56:03.988Z",
+    "subMuscle": "Pecs (Lower)"
   },
   {
     "id": "reverse-grip-triceps-pushdown-triceps",
@@ -4709,7 +4860,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:56:03.988Z"
+    "createdAt": "2026-04-28T16:56:03.988Z",
+    "subMuscle": "Triceps Lateral Head"
   },
   {
     "id": "single-arm-cable-triceps-extension-triceps",
@@ -4740,7 +4892,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:56:03.988Z"
+    "createdAt": "2026-04-28T16:56:03.988Z",
+    "subMuscle": "Triceps"
   },
   {
     "id": "triceps-pushdown-rope-attachment-triceps",
@@ -4771,7 +4924,8 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:56:03.988Z"
+    "createdAt": "2026-04-28T16:56:03.988Z",
+    "subMuscle": "Triceps Lateral Head"
   },
   {
     "id": "seated-triceps-press-triceps",
@@ -4802,6 +4956,7 @@
         "targetReps": 10
       }
     ],
-    "createdAt": "2026-04-28T16:56:03.988Z"
+    "createdAt": "2026-04-28T16:56:03.988Z",
+    "subMuscle": "Triceps"
   }
 ]

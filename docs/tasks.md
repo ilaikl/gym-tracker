@@ -444,3 +444,73 @@
   (PLAN-036 | R50 | LLD-036)
 - [x] Verify targets persist to exercises store and pre-fill correctly when re-adding the exercise
   (PLAN-036 | R50 | LLD-036)
+
+---
+
+## Category F — Refinements & Bug Fixes (Round 2)
+
+## Phase 37 — Sub-Muscle Categories & Precise Replacement Suggestions
+- [x] Add `subMuscle` field to exercise data model — created `scripts/enrichSubMuscle.js` with keyword-mapping rules
+  (PLAN-037 | R51 | LLD-037)
+- [x] Run `enrichSubMuscle.js` to assign `subMuscle` values to all 155 exercises in `data/exercises.json`
+  (PLAN-037 | R51 | LLD-037)
+- [x] Add `getExercisesBySubMuscle(subMuscle)` to `PersistenceService`
+  (PLAN-037 | R51 | LLD-037)
+- [x] Update `bulkSaveExercises` in `PersistenceService` to use merge logic (preserve user targets when re-seeding)
+  (PLAN-037 | R51 | LLD-037)
+- [x] Update replace-exercise flow in `app.js` to query sub-muscle first, fall back to broad muscle
+  (PLAN-037 | R51 | LLD-037)
+- [x] Update replace modal render to show two sections: "Same Movement Pattern" and "Same Muscle Group"
+  (PLAN-037 | R51 | LLD-037)
+- [x] Verify pull-ups/pull-downs and dumbbell-rows/cable-rows are correctly grouped
+  (PLAN-037 | R51 | LLD-037)
+
+## Phase 38 — Fix Modal UI for Landscape Orientation
+- [x] Update `.modal` overlay CSS to use `position: fixed; inset: 0; display: flex; align-items: center;`
+  (PLAN-038 | R52 | LLD-038)
+- [x] Update `.modal-content` CSS to use `max-height: 85vh; display: flex; flex-direction: column; overflow: hidden`
+  (PLAN-038 | R52 | LLD-038)
+- [x] Add `.modal-body` CSS with `flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch`
+  (PLAN-038 | R52 | LLD-038)
+- [x] Add `.modal-footer` CSS with `flex-shrink: 0; border-top` for sticky cancel button
+  (PLAN-038 | R52 | LLD-038)
+- [x] Update `#replace-ex-modal` HTML structure in `index.html` to use `.modal-body` + `.modal-footer`
+  (PLAN-038 | R52 | LLD-038)
+- [x] Update `#exercise-picker-modal` HTML structure in `index.html` to use `.modal-body` + `.modal-footer`
+  (PLAN-038 | R52 | LLD-038)
+- [x] Update `#add-ex-modal` HTML structure in `index.html` to use `.modal-body` + `.modal-footer`
+  (PLAN-038 | R52 | LLD-038)
+
+## Phase 39 — Fix Drag-and-Drop on Real Mobile Devices
+- [x] Update SortableJS init in `app.js` for active workout list: add `forceFallback: true`, `fallbackOnBody: true`, `delay: 150`, `delayOnTouchOnly: true`, `touchStartThreshold: 5`
+  (PLAN-039 | R53 | LLD-039)
+- [x] Add `.sortable-ghost` and `.sortable-fallback` CSS classes in `css/style.css`
+  (PLAN-039 | R53 | LLD-039)
+- [x] Update drag handle to minimum 44×44px touch target size in CSS
+  (PLAN-039 | R53 | LLD-039)
+- [x] Verify `onEnd` callback correctly reads `data-ex-id` and calls `workoutEngine.reorderExercises`
+  (PLAN-039 | R53 | LLD-039)
+
+## Phase 40 — Manual Exercises in Categorized Picker & Settable Targets
+- [x] Replace "Existing" dropdown in add-exercise modal with "Browse Exercise Library" button opening the categorized picker
+  (PLAN-040 | R54 | LLD-040)
+- [x] Manual exercise name field taps open picker; pre-fills all fields from selected exercise
+  (PLAN-040 | R54 | LLD-040)
+- [x] Manual exercise save handler stores `muscle`, `notes`, `source: "manual"`, `targetReps`, `targetWeight` to global library
+  (PLAN-040 | R54 | LLD-040)
+- [x] `renderPickerCategories` shows "My Exercises" / "Manual" groups first (sorted to top)
+  (PLAN-040 | R54 | LLD-040)
+- [x] Fix `WorkoutEngine.promoteToTarget` to not throw when exercise has no program template entry — update global `exercises` store only
+  (PLAN-040 | R55 | LLD-040)
+- [x] Add `buildExerciseTemplate(ex)` helper in `app.js` for consistent template construction from library records
+  (PLAN-040 | R54 | LLD-040)
+
+## Phase 41 — Fix Exercise Target Persistence
+- [x] Update `bulkSaveExercises` in `PersistenceService` to use merge logic: preserve `targetSets`, `targetReps`, `targetWeight` from existing records when re-seeding
+  (PLAN-041 | R56 | LLD-041)
+- [x] Fix `WorkoutEngine.promoteToTarget` — always call `updateExerciseTargets` first; program template update is optional/graceful
+  (PLAN-041 | R56 | LLD-041)
+- [x] Update exercise picker item `onclick` in `app.js` to call `persistenceService.getExercise(ex.id)` for fresh read before pre-filling targets
+  (PLAN-041 | R56 | LLD-041)
+- [x] Add `getExercise(id)` convenience method to `PersistenceService`
+  (PLAN-041 | R56 | LLD-041)
